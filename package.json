@@ -1,0 +1,19 @@
+{
+  "name": "copilot-mini",
+  "version": "1.0.0",
+  "description": "最小化的 copilot-server 学习项目",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "fastify": "^4.28.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.3",
+    "tsx": "^4.7.1",
+    "typescript": "^5.9.3"
+  }
+}
