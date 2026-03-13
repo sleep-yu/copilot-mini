@@ -1,21 +1,19 @@
-import fastify from 'fastify';
-import { bindRoutes } from './routes';
+// ===========================
+// 应用入口
+// 对应原项目的 main.ts / app.ts
+// ===========================
 
-const server = fastify({ logger: true });
+import express from "express";
+import { bindRoutes } from "./routes";
 
-// 绑定路由
-bindRoutes(server);
+const app = express();
+app.use(express.json());
+
+bindRoutes(app);
 
 const PORT = 3000;
-
-async function start() {
-  try {
-    await server.listen({ port: PORT, host: '0.0.0.0' });
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  }
-}
-
-start();
+app.listen(PORT, () => {
+  console.log(`[copilot-mini] 服务启动，监听 http://localhost:${PORT}`);
+  console.log(`  POST /copilot/hook  - 消息入口`);
+  console.log(`  GET  /health        - 健康检查`);
+});

@@ -1,21 +1,19 @@
-import { FastifyInstance } from 'fastify';
-import copilot from '../copilot';
+// ===========================
+// HTTP 路由
+// 对应原项目：src/routes/index.ts
+//
+// 原项目有几十个路由，这里只保留核心的 copilot hook + health
+// ===========================
 
-export const bindRoutes = (server: FastifyInstance) => {
-  // 对话接口
-  server.post('/chat', async (request, reply) => {
-    const { appName, userId, message } = request.body as any;
+import { Application } from "express";
+import { bindCopilot } from "../copilot";
 
-    if (!appName || !userId || !message) {
-      return reply.code(400).send({ error: '缺少必要参数' });
-    }
-
-    const response = await copilot.chat(appName, userId, message);
-    return reply.send(response);
-  });
+export function bindRoutes(app: Application) {
+  // copilot 消息入口（原项目 bindCopilot("/copilot/hook", server)）
+  bindCopilot(app);
 
   // 健康检查
-  server.get('/health', async (request, reply) => {
-    return { status: 'ok' };
+  app.get("/health", (_req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
-};
+}
