@@ -6,11 +6,11 @@
 // 这里简化为导出一个注册函数供 routes 使用
 // ===========================
 
-import { Application as ExpressApp, Request, Response } from "express";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import copilot from "./copilot";
 
 /**
- * 将 copilot 绑定到 Express 路由
+ * 将 copilot 绑定到 Fastify 路由
  * 原项目：bindCopilot(path, fastifyServer) → new CopilotServer(server, path) → copilot.attach(serverForCopilot)
  *
  * 原项目的 CopilotServer 实现了 IServer 接口，包含：
@@ -19,8 +19,8 @@ import copilot from "./copilot";
  *
  * 这里直接在路由层调用 copilot.handleMessage，省略 IServer 中间层
  */
-export function bindCopilot(app: ExpressApp) {
-  app.post("/copilot/hook", async (req: Request, res: Response) => {
+export function bindCopilot(app: FastifyInstance) {
+  app.post("/copilot/hook", async (req: FastifyRequest, reply: FastifyReply) => {
     const { sessionId, appId, message } = req.body as {
       sessionId: string;
       appId: string;
@@ -28,7 +28,7 @@ export function bindCopilot(app: ExpressApp) {
     };
 
     if (!sessionId || !appId || !message) {
-      return res.status(400).json({ error: "缺少必要参数: sessionId, appId, message" });
+      return reply.code(400).send({ error: "缺少必要参数: sessionId, appId, message" });
     }
 
     const replies = await copilot.handleMessage(sessionId, appId, {
@@ -38,6 +38,6 @@ export function bindCopilot(app: ExpressApp) {
       createdAt: Date.now(),
     });
 
-    return res.json({ replies });
+    return reply.send({ replies });
   });
 }
