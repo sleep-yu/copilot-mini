@@ -30,14 +30,11 @@ export class MessageReporter {
    * @param context 上下文（agentId、sessionId 等）
    */
   report(message: string, context?: ReportContext): void {
-    logger.info(
-      {
-        type: "message_report",
-        messageId: this.messageId,
-        ...context,
-      },
-      `[MessageReporter] ${message}`
-    );
+    logger.info(`[MessageReporter] ${message}`, {
+      type: "message_report",
+      messageId: this.messageId,
+      ...context,
+    });
   }
 
   /**
