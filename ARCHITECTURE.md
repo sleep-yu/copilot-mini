@@ -212,7 +212,7 @@ class CopilotServer implements IServer {
 // src/models/CopilotSession.ts
 const CopilotSessionSchema = new Schema({
   sessionId: String,
-  appName: String,
+  appName: String,   // 内部存储字段，非接口参数（标识会话所属应用，由服务端写入）
   historyMessages: Array,
   slots: Object,
 });
