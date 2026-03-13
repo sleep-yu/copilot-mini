@@ -3,7 +3,7 @@ export async function withRetry<T>(
   retries: number = 3,
   delay: number = 1000
 ): Promise<T> {
-  let lastError: Error;
+  let lastError: Error | undefined;
   
   for (let i = 0; i <= retries; i++) {
     try {
@@ -16,5 +16,5 @@ export async function withRetry<T>(
     }
   }
   
-  throw lastError!;
+  throw lastError ?? new Error('Unknown error');
 }
