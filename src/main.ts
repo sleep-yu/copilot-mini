@@ -3,17 +3,20 @@
 // 对应原项目的 main.ts / app.ts
 // ===========================
 
-import express from "express";
+import fastify from "fastify";
 import { bindRoutes } from "./routes";
 
-const app = express();
-app.use(express.json());
+const server = fastify({ logger: true });
 
-bindRoutes(app);
+bindRoutes(server);
 
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`[copilot-mini] 服务启动，监听 http://localhost:${PORT}`);
+server.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Server listening at ${address}`);
   console.log(`  POST /copilot/hook  - 消息入口`);
   console.log(`  GET  /health        - 健康检查`);
 });
