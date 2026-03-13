@@ -346,7 +346,7 @@ export const storage: IStorage = {
   async getItemAsync(sessionId: string) {
     return memoryStorage.get(sessionId) ?? {
       sessionId,
-      appName: "",
+      appName: "",          // 内部存储字段，非接口参数
       historyMessages: [],
       slots: {},
     };
@@ -460,7 +460,7 @@ agent.handle(["买配件"], async (context) => {
 export const storage: IStorage = {
   async getItemAsync(sessionId: string) {
     const doc = await CopilotSession.findOne({ sessionId });
-    return doc?.toObject() ?? { sessionId, appName: "", historyMessages: [], slots: {} };
+    return doc?.toObject() ?? { sessionId, appName: "", historyMessages: [], slots: {} };  // appName 为内部存储字段
   },
   
   async setItemAsync(sessionId: string, data: IContextData) {
