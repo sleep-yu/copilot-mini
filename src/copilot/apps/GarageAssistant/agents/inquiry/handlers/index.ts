@@ -6,8 +6,8 @@
 // 这里合并为一个文件，只保留骨架逻辑
 // ===========================
 
-import { IContext } from "../../../../../types";
-import logger from "../../../../../common/logger";
+import { IContext } from "../../../../../../types";
+import logger from "../../../../../../common/logger";
 
 /** 处理"买配件"意图：收集配件信息，引导用户发布询价 */
 export async function handleBuyParts(context: IContext): Promise<void> {
