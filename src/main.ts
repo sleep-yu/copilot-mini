@@ -10,7 +10,7 @@ const server = fastify({ logger: true });
 
 bindRoutes(server);
 
-const PORT = Number(process.env.PORT) || 9000;
+const PORT = Number(process.env.PORT) || 13579;
 server.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
   if (err) {
     console.error(err);
