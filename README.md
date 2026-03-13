@@ -33,13 +33,13 @@ npm install
 npm run dev
 ```
 
-服务器将在 http://localhost:3000 启动
+服务器将在 http://localhost:54321 启动
 
 ### 3. 测试接口
 
 **发送消息**：
 ```bash
-curl -X POST http://localhost:3000/chat \
+curl -X POST http://localhost:54321/chat \
   -H "Content-Type: application/json" \
   -d '{
     "appName": "assistant",
@@ -50,7 +50,7 @@ curl -X POST http://localhost:3000/chat \
 
 **健康检查**：
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:54321/health
 ```
 
 ## 🎯 核心概念
