@@ -14,7 +14,7 @@ npm run dev
 
 看到这个输出说明启动成功：
 ```
-🚀 Server running at http://localhost:3000
+🚀 Server running at http://localhost:54321
 ```
 
 ## 第三步：测试
@@ -27,7 +27,7 @@ npm run dev
 ### 方式2：手动测试
 ```bash
 # 测试问候
-curl -X POST http://localhost:3000/chat \
+curl -X POST http://localhost:54321/chat \
   -H "Content-Type: application/json" \
   -d '{"appName":"assistant","userId":"user123","message":"你好"}'
 ```
@@ -88,7 +88,7 @@ curl -X POST http://localhost:3000/chat \
 ## ❓ 常见问题
 
 **Q: 端口被占用怎么办？**
-A: 修改 `src/main.ts` 中的 `PORT` 变量
+A: 设置环境变量 `PORT=<端口号>` 或修改 `src/main.ts` 中的默认端口（当前默认 54321）
 
 **Q: 如何添加日志？**
 A: Fastify 自带日志，在代码中使用 `console.log`
