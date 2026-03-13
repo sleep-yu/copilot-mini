@@ -40,6 +40,9 @@ export class HttpClient {
         headers: config?.headers,
         signal: controller.signal,
       });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
       return (await res.json()) as T;
     } finally {
       clearTimeout(timer);
@@ -59,6 +62,9 @@ export class HttpClient {
         body: JSON.stringify(data),
         signal: controller.signal,
       });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
       return (await res.json()) as T;
     } finally {
       clearTimeout(timer);
