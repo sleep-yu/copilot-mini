@@ -9,14 +9,6 @@
 
 import logger from "../../common/logger";
 
-/**
- * 意图分类选项
- */
-interface IntentOption {
-  label: string;
-  value: string;
-}
-
 export class PromptService {
   /**
    * 快速解析用户意图
