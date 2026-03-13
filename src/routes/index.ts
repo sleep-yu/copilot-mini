@@ -5,7 +5,7 @@
 // 原项目有几十个路由，这里只保留核心的 copilot hook + health
 // ===========================
 
-import { Application } from "express";
+import { Application, Request, Response } from "express";
 import { bindCopilot } from "../copilot";
 
 export function bindRoutes(app: Application) {
@@ -13,7 +13,7 @@ export function bindRoutes(app: Application) {
   bindCopilot(app);
 
   // 健康检查
-  app.get("/health", (_req, res) => {
+  app.get("/health", (_req: Request, res: Response) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 }

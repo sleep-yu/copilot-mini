@@ -6,7 +6,7 @@
 // 这里简化为导出一个注册函数供 routes 使用
 // ===========================
 
-import { Application as ExpressApp } from "express";
+import { Application as ExpressApp, Request, Response } from "express";
 import copilot from "./copilot";
 
 /**
@@ -20,7 +20,7 @@ import copilot from "./copilot";
  * 这里直接在路由层调用 copilot.handleMessage，省略 IServer 中间层
  */
 export function bindCopilot(app: ExpressApp) {
-  app.post("/copilot/hook", async (req, res) => {
+  app.post("/copilot/hook", async (req: Request, res: Response) => {
     const { sessionId, appId, message } = req.body as {
       sessionId: string;
       appId: string;
