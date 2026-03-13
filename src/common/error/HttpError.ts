@@ -1,4 +1,4 @@
-import ErrorCode from '../enums/ErrorCode';
+import { ErrorCode } from '../enums/ErrorCode';
 
 export class HttpError<T = unknown> extends Error {
   public code: number;

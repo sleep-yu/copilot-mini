@@ -1,4 +1,4 @@
-import ErrorCode from '../enums/ErrorCode';
+import { ErrorCode } from '../enums/ErrorCode';
 import { HttpError } from './HttpError';
 
 const ERROR_MESSAGES: Record<number, string> = {
