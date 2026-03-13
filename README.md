@@ -179,8 +179,8 @@ agent.handle(["发布询价"], async (ctx) => {
 
 ```typescript
 interface IContext {
-  sessionId: string;
-  appName: string;
+  sessionId: string;         // 接口请求参数，标识会话
+  appName: string;           // 内部存储字段，非接口参数（来自持久化层，标识所属应用）
   lastMessage: IMessage;
   historyMessages: IMessage[];
   slots: Record<string, unknown>;
