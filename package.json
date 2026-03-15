@@ -21,10 +21,12 @@
     "bunyan": "^1.8.15",
     "config": "^4.4.1",
     "fastify": "^5.8.2",
+    "lodash": "^4.17.23",
     "mongoose": "^9.3.0"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.11",
+    "@types/lodash": "^4.17.24",
     "@types/node": "^25.5.0"
   }
 }

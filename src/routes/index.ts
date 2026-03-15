@@ -1,6 +1,8 @@
 import { FastifyInstance } from "fastify";
 import healthHandler from "./health";
+import { bindCopilot } from "@/copilot";
 
 export const bindRoutes = (server: FastifyInstance) => {
-  server.get('health', healthHandler)
+  bindCopilot('/copilot/hook', server);
+  server.get('/health', healthHandler);
 }
