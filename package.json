@@ -1,0 +1,30 @@
+{
+  "name": "copilot-mini",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sleep-yu/copilot-mini.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sleep-yu/copilot-mini/issues"
+  },
+  "homepage": "https://github.com/sleep-yu/copilot-mini#readme",
+  "dependencies": {
+    "bunyan": "^1.8.15",
+    "config": "^4.4.1",
+    "fastify": "^5.8.2",
+    "mongoose": "^9.3.0"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.11",
+    "@types/node": "^25.5.0"
+  }
+}
