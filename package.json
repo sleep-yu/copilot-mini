@@ -18,12 +18,16 @@
   },
   "homepage": "https://github.com/sleep-yu/copilot-mini#readme",
   "dependencies": {
+    "@types/react": "^19.2.14",
     "bunyan": "^1.8.15",
     "config": "^4.4.1",
     "dayjs": "^1.11.20",
+    "fast-xml-parser": "^5.5.6",
     "fastify": "^5.8.2",
     "lodash": "^4.17.23",
-    "mongoose": "^9.3.0"
+    "marked": "^17.0.4",
+    "mongoose": "^9.3.0",
+    "undici": "^7.24.4"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.11",

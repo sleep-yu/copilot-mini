@@ -43,6 +43,7 @@ const schema = new Schema<ICopilotMessage>(
     dialogueId: String,
     placeholder: String,
     blocks: [Object],
+    metadata: Object,
   },
   {
     timestamps: true,

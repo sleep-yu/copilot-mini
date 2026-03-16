@@ -1,5 +1,7 @@
 import { Entity } from "../entity";
 import type { SlotRecords } from "../slots";
+import { ReplyMode } from "../IServer";
+
 interface IAdditionalFormatBase<T> {
   id?: string;
   type: string;
@@ -144,6 +146,10 @@ export interface IMessageBase {
    * 输入框默认值
    */
   placeholder?: string;
+  /**
+   * 元数据
+   */
+  metadata?: Record<string, any>;
 }
 export interface IMultTextMessage {
   type: "text" | "markdown" | "richtext";
@@ -213,4 +219,11 @@ export interface IPayload {
   app: string;
   data: IMessage;
   [extra: string]: any;
+}
+
+export interface ISocket {
+  id: string;
+  send(message: IMessage): void;
+  end(): void;
+  setReplyMode(replyMode: ReplyMode): void;
 }

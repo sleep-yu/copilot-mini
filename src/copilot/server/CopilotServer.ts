@@ -4,7 +4,7 @@ import { useRequestMeta } from "@/common/asyncStore";
 import { ICommandMessage, IPayload, IMessage } from "@/interface/messages";
 import { AppId } from "@/common/enums/AppId";
 import { AgentId, VersionEnum } from "@/common/enums";
-import { parseUserAgent } from "@/common/utils";
+import { createObjectId, parseUserAgent } from "@/common/utils";
 import { Version } from "@/common/utils";
 import { ISocket } from "@/interface/IServer";
 import { Dialogue } from "@/model/Dialogue";
@@ -17,6 +17,9 @@ import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Types } from "mongoose";
 import { sendPollingErrorToWechat } from "@/common/utils/wechat";
+import { ContextValue, IContextValue } from "@/model/ContextValue";
+import { Session } from "@/interface/session/Session";
+import { storage } from "../storage";
 
 type PayloadCallback = Parameters<IServer["onPayload"]>[0];
 interface IDoPollingParams {
@@ -91,7 +94,42 @@ class CopilotServer implements IServer {
         // 处理流式轮询消息，直接返回消息列表，不进入后续流程
         if (this.isPollingCommand(fromMessage)) {
           const messages = await this.doPolling(fromMessage.params);
+          reply.send({
+            sessionId,
+            messages,
+          });
+
+          return reply;
         }
+        if (!userId) throw new Error('缺少 fromUser');
+        const dialogueId = fromMessage.dialogueId;
+        let condition: Partial<IContextValue> = { userId, app };
+        if (dialogueId) {
+          condition = { dialogueId };
+        }
+        // 查询最新的sessionId
+        const beforeContextValue = await ContextValue.findOne(condition, { _id: 0, id: 0 })
+          .sort({ updatedAt: -1 })
+          .exec();
+        sessionId = beforeContextValue?.sessionId;
+        const session = new Session({ app, userId, sessionId, dialogueId, storage, createId: createObjectId });
+        await session.loadContextData();
+        sessionId = session.sessionId;
+        // 保存用户信息
+        const msg = await CopilotMessage.create({
+          ...fromMessage,
+          sessionId,
+          dialogueId,
+          toUser: "system",
+          metadata: (fromMessage as any).metadata || payload.metadata,
+          id: undefined,
+          _id: undefined,
+          createdAt: undefined,
+          requestId,
+        })
+        // 保存后的消息包含id，便于后续业务使用
+        payload.data = msg.toJSON();
+        const appVersion = payload.appVersion as Version;
       } catch (error) {
 
       }
@@ -172,7 +210,6 @@ class CopilotServer implements IServer {
       }
       return messages;
     }
-
   }
 
   // 组装message消息，添加agentId owner参数
