@@ -206,3 +206,11 @@ export interface IBlockMessage extends IMessageBase {
 }
 export type IMessage = IImageMessage | IVideoMessage | IVoiceMessage | ICommandMessage | ITextMessage | IMarkdownMessage | IRichTextMessage | IFormMessage | ISystemMessage | IRecordMessage | IBlockMessage;
 export { };
+
+
+export interface IPayload {
+  sessionId?: string;
+  app: string;
+  data: IMessage;
+  [extra: string]: any;
+}
