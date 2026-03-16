@@ -12,7 +12,11 @@ import { AppMap } from "@/common/enums/AppId";
 import { Intents } from "../constants/Intents";
 import { sleep } from "@/common/utils";
 import { RequestStatus } from "@/model/RequestStatus";
-import { CopilotMessage } from "@/model/CopilotMessage";
+import { CopilotMessage, ICopilotMessage } from "@/model/CopilotMessage";
+import _ from 'lodash';
+import dayjs from 'dayjs';
+import { Types } from "mongoose";
+import { sendPollingErrorToWechat } from "@/common/utils/wechat";
 
 type PayloadCallback = Parameters<IServer["onPayload"]>[0];
 interface IDoPollingParams {
@@ -132,6 +136,43 @@ class CopilotServer implements IServer {
         createdAt: { $gt: createdAfter },
       }),
     ]);
+    // 将消息文档转换为 ICopilotMessage 数组
+    const messages: ICopilotMessage[] = messageDocs.map((msgdoc) => msgdoc.toJSON());
+    // 如果有消息且请求未结束
+    if (messages.length && requestStatus && !requestStatus.done) {
+      // 取出回复消息中最新一条消息的updatedAt
+      const maxUpdatedAt = _.maxBy(messages, "updatedAt")?.updatedAt;
+      // 检查消息是否有变化
+      const hasChanged = dayjs(maxUpdatedAt).isAfter(dayjs(updatedAt));
+      if (!hasChanged) {
+        // 流式消息没有变化，多延迟500ms
+        await sleep(500);
+      }
+      // 请求未结束，继续增加触发 polling 的 reply 消息
+      const { requestId, sessionId, fromUser } = messages[0];
+      messages.push({
+        id: new Types.ObjectId().toString(),
+        type: "command",
+        fromUser,
+        command: Intents.pollingStreamMsg,
+        reply: {
+          type: "command",
+          command: Intents.pollingStreamMsg,
+          params: { requestId, sessionId, updatedAt: dayjs(maxUpdatedAt).valueOf() },
+        },
+        sessionId
+      } as ICopilotMessage)
+      // 长时间不结束，推送企微
+      const minCreatedAt = _.minBy(messages, "createdAt")?.createdAt;
+      const isTimeout = dayjs(minCreatedAt).add(60, "second").isBefore(dayjs());
+      const isPushTimeout = dayjs(minCreatedAt).add(65, "second").isBefore(dayjs());
+      const isBackground = messages.every((msg) => msg.background);
+      if (!isBackground && isTimeout && !isPushTimeout) {
+        sendPollingErrorToWechat(requestId, messages);
+      }
+      return messages;
+    }
+
   }
 
   // 组装message消息，添加agentId owner参数
