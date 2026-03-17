@@ -20,6 +20,8 @@ import { sendPollingErrorToWechat } from "@/common/utils/wechat";
 import { ContextValue, IContextValue } from "@/model/ContextValue";
 import { Session } from "@/interface/session/Session";
 import { storage } from "../storage";
+import MessageProcessor from "./MessageProcessor";
+import CopilotSocket from "./CopilotSocket";
 
 type PayloadCallback = Parameters<IServer["onPayload"]>[0];
 interface IDoPollingParams {
@@ -130,6 +132,15 @@ class CopilotServer implements IServer {
         // 保存后的消息包含id，便于后续业务使用
         payload.data = msg.toJSON();
         const appVersion = payload.appVersion as Version;
+        const containerId = payload.containerId as string;
+        socket = new CopilotSocket({
+          sessionId,
+          fromMessage: msg,
+          reply,
+          replyMode: payload.replyMode || "block",
+          requestId,
+          messageProcessor: new MessageProcessor({ appVersion, containerId }),
+        });
       } catch (error) {
 
       }

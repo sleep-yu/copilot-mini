@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import logger from "../logger/logger";
 import assert from "node:assert";
 import { getApolloConfig, isDev } from "./env";
+import { IMessage, ITextMessage } from "@/interface/messages";
 
 export const sendPollingErrorToWechat = async (requestId: string | undefined, messages: ICopilotMessage[]) => {
   try {
@@ -55,3 +56,27 @@ export const sendMessageToWechat = async (markdownContent: string) => {
     logger.error("发送企微异常", error.message, error.stack);
   }
 }
+
+
+export const sendMessageErrorToWechat = async (msg: IMessage) => {
+  try {
+    const contextValue = await ContextValue.findOne({ sessionId: msg.sessionId });
+    const cellphone = contextValue?.agentMemories?.["inquiry-agent"]?.slots?.user?.cellphone;
+    const dialogueId = contextValue?.dialogueId;
+
+    await sendMessageToWechat(`
+  ### copilot-server异常
+  - 异常类型：已捕获异常消息
+  - 回复消息内容: ${(msg as ITextMessage)?.content}
+  - dialogueId: ${dialogueId}
+  - sessionId: ${msg.sessionId}
+  - 手机号: ${cellphone}
+  - 时间: ${dayjs(msg.createdAt).format("YYYY-MM-DD HH:mm:ss")}
+  - 错误信息: ${msg.extra?.message}
+  - message: ${JSON.stringify(msg)}
+  `);
+  } catch (error) {
+    assert(error instanceof Error);
+    logger.error("sendMessageErrorToWechat异常", error.message, error.stack);
+  }
+};
