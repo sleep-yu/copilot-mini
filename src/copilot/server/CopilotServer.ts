@@ -265,6 +265,9 @@ class CopilotServer implements IServer {
     return fromMessage;
   }
 
+  onPayload(callback: PayloadCallback): void {
+    this.payloadCallback = callback;
+  }
 }
 
 export default CopilotServer;

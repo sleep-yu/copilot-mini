@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "LOG_LEVEL=debug tsx watch src/main.ts | bunyan -L"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "lodash": "^4.17.23",
     "marked": "^17.0.4",
     "mongoose": "^9.3.0",
+    "nodemon": "^3.1.14",
     "undici": "^7.24.4"
   },
   "devDependencies": {
