@@ -119,11 +119,6 @@ export class Router {
       agent = this.sceneMap.get(scene);
     }
 
-    // 如果配置了兜底Agent，走兜底Agent
-    if (!agent) {
-      agent = context.application.fallbackAgent;
-    }
-
     if (!agent) {
       throw new Error(`No agent found`);
     }

@@ -15,8 +15,6 @@ export interface IServiceContext {
   setTempData<T>(key: string, value: T): void;
   getTempData<T>(key: string): T | undefined;
   getOrSetTempData<T>(key: string, value: T): T;
-  getReplyMessageId(defaultMsgId?: string): string;
-  setReplyMessageId(msgId: string): void;
 }
 export declare abstract class Service {
   protected context: IServiceContext;
