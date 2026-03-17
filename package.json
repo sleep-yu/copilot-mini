@@ -33,6 +33,8 @@
   "devDependencies": {
     "@types/bunyan": "^1.8.11",
     "@types/lodash": "^4.17.24",
-    "@types/node": "^25.5.0"
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
