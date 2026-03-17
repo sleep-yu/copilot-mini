@@ -4,7 +4,7 @@ import { useRequestMeta } from "@/common/asyncStore";
 import { ICommandMessage, IPayload, IMessage } from "@/interface/messages";
 import { AppId } from "@/common/enums/AppId";
 import { AgentId, VersionEnum } from "@/common/enums";
-import { createObjectId, parseUserAgent } from "@/common/utils";
+import { createObjectId, parseUserAgent, isError } from "@/common/utils";
 import { Version } from "@/common/utils";
 import { ISocket } from "@/interface/IServer";
 import { Dialogue } from "@/model/Dialogue";
@@ -22,6 +22,9 @@ import { Session } from "@/interface/session/Session";
 import { storage } from "../storage";
 import MessageProcessor from "./MessageProcessor";
 import CopilotSocket from "./CopilotSocket";
+import logger from "@/common/logger/logger";
+import assert from "assert";
+import { MessageFactory } from "@/interface/messages/factory";
 
 type PayloadCallback = Parameters<IServer["onPayload"]>[0];
 interface IDoPollingParams {
@@ -61,7 +64,7 @@ class CopilotServer implements IServer {
     this.server.post<IParamsSchema>(path, opts, async (req, reply) => {
       const { requestId } = useRequestMeta();
       const payload = req.body as IPayload || AppId.Question_Answer;
-      payload.app = payload.app;
+      payload.app = payload.app || AppId.Question_Answer;
       const { app, companyId } = payload;
       const fromMessage = this.exactFromMessage(payload);
       const userId = fromMessage.fromUser;
@@ -141,9 +144,29 @@ class CopilotServer implements IServer {
           requestId,
           messageProcessor: new MessageProcessor({ appVersion, containerId }),
         });
-      } catch (error) {
-
+        await this.payloadCallback?.(payload, socket, session);
+      } catch (err) {
+        logger.error("Copilot Server 出错了", payload.data, err);
+        assert(isError<{ extra?: { message?: string } }>(err), "err must be an instance of Error");
+        const errMsg = err.extra?.message || err.message || "未知错误";
+        if (socket) {
+          let msg: IMessage = MessageFactory.system(errMsg, {
+            fromUser: "system",
+            toUser: fromMessage.fromUser,
+          });
+          const { appVersion } = useRequestMeta();
+          const isFromWeb = appVersion.isEqual(VersionEnum.MAX_VERSION);
+          if (appVersion.isLessThan(VersionEnum.SYSTEM_MSG_SUPPORT) || isFromWeb) {
+            msg = MessageFactory.text(errMsg, {
+              fromUser: "system",
+              toUser: fromMessage.fromUser,
+            });
+          }
+          socket.send(msg);
+          socket.end();
+        }
       }
+      return reply;
     })
   }
 

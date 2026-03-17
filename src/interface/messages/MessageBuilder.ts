@@ -1,314 +1,150 @@
 import { SlotRecords } from "../slots";
 import { AdditionalFormat, IBlockMessage, ICommandMessage, IFormMessage, IImageMessage, IMarkdownMessage, IMessage, IRichTextMessage, ISystemMessage, ITextMessage, IVideoMessage, IVoiceMessage } from "./types";
-export declare class MessageBuilder {
-  private _props;
-  constructor(_props?: Partial<IMessage>);
-  static with(props?: Partial<IMessage>): MessageBuilder;
-  with(props: Partial<IMessage>): MessageBuilder;
+export class MessageBuilder {
+  constructor(private _props: Partial<IMessage> = {}) { }
+
+  static with(props: Partial<IMessage> = {}) {
+    return new MessageBuilder(props);
+  }
+  with(props: Partial<IMessage>) {
+    return new MessageBuilder({ ...this._props, ...props });
+  }
+
   /**
    * 合并消息属性
    * @param props
    */
-  merge(props: Partial<IMessage>): void;
-  get props(): {
-    type?: "image" | undefined;
-    imageUrl?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "video" | undefined;
-    videoUrl?: string | undefined;
-    thumb?: string | undefined;
-    duration?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "voice" | undefined;
-    content?: string | undefined;
-    voiceDuration?: string | undefined;
-    amrBase64Content?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "command" | undefined;
-    command?: string | undefined;
-    params?: any;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "text" | undefined;
-    content?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "markdown" | undefined;
-    content?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "richtext" | undefined;
-    content?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "form" | undefined;
-    formData?: SlotRecords | undefined;
-    formName?: string | undefined;
-    status?: string | undefined;
-    title?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "system" | undefined;
-    content?: string | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "record" | undefined;
-    text?: string | undefined;
-    intent?: string | undefined;
-    command?: string | undefined;
-    action?: import("./types").IAction | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  } | {
-    type?: "block" | undefined;
-    blocks?: AdditionalFormat[] | undefined;
-    requestId?: string | undefined;
-    sessionId?: string | undefined;
-    id?: string | undefined;
-    nlu?: import("./types").INLU | undefined;
-    actions?: import("./types").IAction[][] | undefined;
-    indicator?: AdditionalFormat | undefined;
-    embed?: AdditionalFormat | undefined;
-    tips?: AdditionalFormat | undefined;
-    disclaimer?: string | undefined;
-    extra?: Record<string, any> | undefined;
-    fromUser?: string | undefined;
-    agent?: string | undefined;
-    app?: string | undefined;
-    toUser?: string | undefined;
-    reply?: IMessage | undefined;
-    replyDelay?: number | undefined;
-    createdAt?: number | undefined;
-    owner?: string | undefined;
-    background?: boolean | undefined;
-    persistent?: boolean | undefined;
-    dialogueId?: string | undefined;
-    placeholder?: string | undefined;
-  };
-  base(): {
-    createdAt: number;
-  };
-  text(text: string, others?: Partial<ITextMessage>): ITextMessage;
-  markdown(text: string, others?: Partial<IMarkdownMessage>): IMarkdownMessage;
-  richtext(text: string, others?: Partial<IRichTextMessage>): IRichTextMessage;
-  form(formName: string, formData: SlotRecords, others: Partial<IFormMessage>): IFormMessage;
-  image(imageUrl: string, others?: Partial<IImageMessage>): IImageMessage;
-  video(videoUrl: string, others?: Partial<IVideoMessage>): IVideoMessage;
-  voice(voiceDuration: string, amrBase64Content: string, others?: Partial<IVoiceMessage>): IVoiceMessage;
-  command(command: string, params: any, others?: Partial<ICommandMessage>): ICommandMessage;
-  system(text: string, others?: Partial<ISystemMessage>): ISystemMessage;
-  block(blocks: AdditionalFormat[], others?: Partial<IMessage>): IBlockMessage;
-  build(others?: Partial<IMessage>): IMessage;
+  merge(props: Partial<IMessage>) {
+    this._props = { ...this._props, ...props };
+  }
+
+  get props() {
+    return { ...this._props };
+  }
+
+  base() {
+    return {
+      // id: crypto.randomUUID() + `-${Date.now().toString(36)}`,
+      createdAt: Date.now(),
+    };
+  }
+
+  text(text: string, others?: Partial<ITextMessage>): ITextMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "text",
+      content: text || "",
+      ...this.base(),
+    };
+  }
+
+  markdown(text: string, others?: Partial<IMarkdownMessage>): IMarkdownMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "markdown",
+      content: text || "",
+      ...this.base(),
+    };
+  }
+
+  richtext(text: string, others?: Partial<IRichTextMessage>): IRichTextMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "richtext",
+      content: text || "",
+      ...this.base(),
+    };
+  }
+
+  form(formName: string, formData: SlotRecords, others: Partial<IFormMessage>): IFormMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "form",
+      formData,
+      formName,
+      ...this.base(),
+    };
+  }
+
+  image(imageUrl: string, others?: Partial<IImageMessage>): IImageMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "image",
+      imageUrl,
+      ...this.base(),
+    };
+  }
+
+  video(videoUrl: string, others?: Partial<IVideoMessage>): IVideoMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "video",
+      videoUrl,
+      ...this.base(),
+    };
+  }
+
+  voice(voiceDuration: string, amrBase64Content: string, others?: Partial<IVoiceMessage>): IVoiceMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "voice",
+      voiceDuration,
+      amrBase64Content,
+      ...this.base(),
+    };
+  }
+
+  command(command: string, params: any, others?: Partial<ICommandMessage>): ICommandMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "command",
+      command,
+      params,
+      ...this.base(),
+    };
+  }
+
+  system(text: string, others?: Partial<ISystemMessage>): ISystemMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "system",
+      content: text || "",
+      ...this.base(),
+    };
+  }
+
+  block(blocks: AdditionalFormat[], others?: Partial<IMessage>): IBlockMessage {
+    return {
+      ...this._props,
+      ...others,
+      type: "block",
+      blocks,
+      ...this.base(),
+    };
+  }
+
+  build(others?: Partial<IMessage>): IMessage {
+    const message = {
+      blocks: [],
+      content: "",
+      ...this._props,
+      ...others,
+      ...this.base(),
+    };
+
+    if (!message.type) {
+      message.type = "block";
+    }
+
+    return message as IMessage;
+  }
 }

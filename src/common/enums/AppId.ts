@@ -3,5 +3,5 @@ export enum AppId {
 }
 
 export const AppMap = {
-  Question_Answer: '问答助手'
+  QUESTION_ANSWER: '问答助手'
 }

@@ -3,3 +3,4 @@ export * from './string';
 export * from './env';
 export * from './Version';
 export * from './async';
+export * from './error';
