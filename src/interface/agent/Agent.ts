@@ -1,7 +1,5 @@
-import assert from "assert";
 import type { Context } from "../context";
 import type { FormConfig } from "../form";
-import { Question } from "../question";
 import { SlotConfig as SlotConfig, SlotRecords } from "../slots";
 import type { INLU } from "../messages";
 import { FALLBACK_SYMBOL, IClassifier } from "../classifier/Classifier";
@@ -10,7 +8,7 @@ import { IntentParser } from "./IntentParser";
 import { Handler, TaskHandler } from "../abstract";
 import { Task } from "../Task";
 
-type HandlerClass = new (context: Context) => Handler;
+type HandlerClass = new (context: Context, agent: Agent) => Handler;
 
 export type IHandlerFunction = (context: Context) => Promise<void>;
 
@@ -22,6 +20,19 @@ export type IntentParserFun = (context: Context, candidates: string[]) => Promis
 export type EntitiesParser = (context: Context) => Promise<void> | void;
 
 const MAIN_SYMBOL = Symbol("main");
+
+type IntentType = string | symbol;
+
+export interface AgentOptions {
+  /**
+   * Agent名称
+   */
+  name: string;
+  /**
+   * Agent描述
+   */
+  description: string;
+}
 
 /**
  * Agent
@@ -44,11 +55,32 @@ const MAIN_SYMBOL = Symbol("main");
  * ```
  */
 export class Agent {
-  constructor(public readonly id: string, public readonly name?: string) { }
+  constructor(public readonly agentId: string, private readonly options?: AgentOptions) { }
+
+  /**
+   * @deprecated 请使用agentId
+   */
+  get name() {
+    return this.options?.name || this.agentId;
+  }
+
+  /**
+   * agent名称
+   */
+  get agentName() {
+    return this.options?.name || this.agentId;
+  }
+
+  /**
+   * agent描述
+   */
+  get description() {
+    return this.options?.description || "";
+  }
+
   protected formConfigs: Record<string, FormConfig> = {};
   protected slotsConfigs: Record<string, SlotConfig> = {};
-  protected questionConfig: Record<string, typeof Question<any>> = {};
-  private intentMap: Record<string | symbol, IHandlerFunction> = {};
+  private intentMap: Map<string | symbol, IHandlerFunction> = new Map();
 
   private background: boolean = false;
 
@@ -112,10 +144,6 @@ export class Agent {
     this.slotsConfigs[name] = slotConfig;
   }
 
-  registerQuestion<T>(Q: typeof Question<T>) {
-    this.questionConfig[Q.name] = Q;
-  }
-
   /**
    * 注册表单
    * @param formName
@@ -161,6 +189,10 @@ export class Agent {
   }
 
   private async executeSlotsFilling(context: Context) {
+    // 如果为false,不自动填充槽位
+    if (!context.autoFillSlots) {
+      return;
+    }
     const slots: SlotRecords = {};
     for (const [name, slot] of Object.entries(this.slotsConfigs)) {
       const slotValue = await slot.filling?.(context.entities, context);
@@ -180,14 +212,14 @@ export class Agent {
    * @param intent
    * @param handler
    */
-  handle(intent: symbol | string | string[], handler: IHandler) {
-    const handlerFn = this.isHandlerClass(handler) ? (ctx: Context) => new handler(ctx).handle() : handler;
+  handle(intent: IntentType | IntentType[], handler: IHandler) {
+    const handlerFn = this.isHandlerClass(handler) ? (ctx: Context) => new handler(ctx, this).handle() : handler;
     const intents = Array.isArray(intent) ? intent : [intent];
     for (const _intent of intents) {
-      if (this.intentMap[_intent]) {
+      if (this.intentMap.get(_intent)) {
         throw new Error(`Intent ${String(_intent)} already exists`);
       }
-      this.intentMap[_intent] = handlerFn;
+      this.intentMap.set(_intent, handlerFn);
     }
   }
 
@@ -203,13 +235,13 @@ export class Agent {
     this.handle(FALLBACK_SYMBOL, handler);
   }
 
-  private _taskHandler?: new (context: Context, task: Task<any>) => TaskHandler<unknown>;
+  private _taskHandler?: new (context: Context, task: Task<any>, agent: Agent) => TaskHandler<unknown>;
 
   /**
    * 处理特定任务的回调
    * @param handler
    */
-  handleTask<T>(handler: new (context: Context, task: Task<T>) => TaskHandler<T>) {
+  handleTask<T>(handler: new (context: Context, task: Task<T>, agent: Agent) => TaskHandler<T>) {
     this._taskHandler = handler;
   }
 
@@ -218,15 +250,28 @@ export class Agent {
    * @param context
    * @param intent
    */
-  async executeHandler(context: Context, intent: string | symbol) {
-    const handler = this.intentMap[intent] || this.intentMap[FALLBACK_SYMBOL];
+  async executeHandler(context: Context, intent: IntentType) {
+    let handler = this.intentMap.get(intent);
+
+    // 如果intent以@开头，则认为是command
+    // 没有实现command的handler时，打印错误日志，不处理
+    if (!handler && String(intent).startsWith("@command")) {
+      console.error(`Intent ${String(intent)} not found`);
+      return;
+    }
+
+    // 如果没有找到对应的handler，使用fallback
+    handler = handler || this.intentMap.get(FALLBACK_SYMBOL);
     if (handler) {
       await handler(context);
+      return;
     }
+
+    console.error(`Intent ${String(intent)}[${typeof intent}] not found`);
   }
 
   get categories() {
-    return Object.keys(this.intentMap);
+    return [...this.intentMap.keys()];
   }
 
   get preClassifiers() {
@@ -235,6 +280,22 @@ export class Agent {
     };
     delete preClassifiers[MAIN_SYMBOL];
     return preClassifiers;
+  }
+
+  private async parseIntent(context: Context) {
+    const lastMessage = context.lastMessage;
+    if (lastMessage.type === "command") {
+      return buildCommandIntent(lastMessage.command);
+    }
+
+    const mainClassifier = this.classifiers[MAIN_SYMBOL];
+
+    if (mainClassifier) {
+      const parser = new IntentParser(mainClassifier, this.preClassifiers);
+      return parser.parse(context, this.categories);
+    }
+
+    return FALLBACK_SYMBOL;
   }
 
   /**
@@ -248,7 +309,7 @@ export class Agent {
       if (!H) {
         throw new Error(`Task handler not found`);
       }
-      const taskHandler = new H(context, nlu);
+      const taskHandler = new H(context, nlu, this);
       await taskHandler.handle();
       return;
     }
@@ -259,14 +320,12 @@ export class Agent {
       await this.entitiesParser(context);
     }
 
-    let intent: string | symbol | undefined = nlu.intent;
+    let intent: IntentType | undefined = nlu.intent;
     if (!intent) {
-      const mainClassifier = this.classifiers[MAIN_SYMBOL];
-      assert(mainClassifier, `Main classifier is not defined`);
-      const parser = new IntentParser(mainClassifier, this.preClassifiers);
-      intent = await parser.parse(context, this.categories);
+      intent = await this.parseIntent(context);
     }
-    context.setIntent(intent as string);
+
+    context.setIntent(intent);
 
     context.memory.setSlotsConfig(this.slotsConfigs);
 

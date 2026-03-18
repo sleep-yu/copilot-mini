@@ -115,7 +115,8 @@ export class Copilot {
             dialogueId: payload.data.dialogueId || payload.dialogueId,
             createId: this.config.createId,
           }),
-        router
+        application,
+        createId: this.config.createId,
       });
       try {
         // 从存储中加载上下文

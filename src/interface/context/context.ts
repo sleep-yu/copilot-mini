@@ -5,22 +5,23 @@ import { InnerForm, IFormConfig, Form } from "../form";
 import { SlotRecords } from "../slots";
 import { Memory } from "../memory/Memory";
 import { Session } from "../session";
-import { IServiceContext, Service } from "../abstract";
+import { IdCreator, IServiceContext, Service } from "../abstract";
 import type { IPayload, ISocket, ReplyMode } from "../network";
 import type { History } from "../storage";
-import type { IMarkdownMessage, IMessage, INLU, ITextMessage } from "../messages";
+import { MessageBuilder, type IMarkdownMessage, type IMessage, type INLU, type ITextMessage } from "../messages";
 import type { Agent, Code, IClassifier } from "../agent";
 import { Router } from "../Router";
 import { ReplyStream } from "../replier/StreamReplier";
 import { MarkdownStreamReplier, Replier, TextStreamReplier } from "../replier";
 import { isClass } from "../helpers/utils";
 import { Task } from "../Task";
+import type { Application } from "../app";
 
-export interface ContextConfig {
+export interface ContextConfig extends IdCreator {
   session: Session;
   socket: ISocket;
   payload: IPayload;
-  router?: Router;
+  application: Application;
 }
 
 export interface SlotChanged {
@@ -30,7 +31,11 @@ export interface SlotChanged {
 }
 
 export type AgentHistory = {
+  /**
+   * @deprecated 请使用 agentId 替代
+   */
   agentName: string;
+  agentId: string;
   activatedAt: number;
 };
 
@@ -40,9 +45,14 @@ export enum ContextState {
   FINISHED = 9,
 }
 
+const REPLY_MESSAGE_ID_KEY = "__SHARED_REPLY_MSG_ID__";
+
 export class Context {
   private socket: ISocket;
-  private router?: Router;
+
+  private get router(): Router | undefined {
+    return this.application.router;
+  }
 
   public payload: IPayload;
 
@@ -72,8 +82,37 @@ export class Context {
   // 是否持久化
   private state = ContextState.INIT;
 
+  /**
+   * 是否自动填充槽位
+   */
+  autoFillSlots = true;
+
+  /**
+   * 设置是否自动填充槽位
+   * @param autoFill 是否自动填充槽位
+   */
+  setAutoFillSlots(autoFill: boolean) {
+    this.autoFillSlots = autoFill;
+  }
+
   setState(state: ContextState) {
     this.state = state;
+  }
+
+  /**
+   * 设置回复消息ID，允许跨Agent共享
+   * @param messageId
+   */
+  setReplyMessageId(messageId: string) {
+    this.setTempData(REPLY_MESSAGE_ID_KEY, messageId);
+  }
+
+  /**
+   * 获取回复消息ID，如果不存在则创建一个
+   * @returns
+   */
+  getReplyMessageId(defaultMsgId?: string) {
+    return this.getOrSetTempData(REPLY_MESSAGE_ID_KEY, defaultMsgId || this.createId());
   }
 
   get sessionId() {
@@ -84,20 +123,43 @@ export class Context {
     return this.payload.data;
   }
 
+  private MESSAGE_BUILDER_KEY = Symbol("__MESSAGE_BUILDER__");
+
+  /**
+   * 返回默认的消息构建器
+   */
+  get messageBuilder(): MessageBuilder {
+    if (!this.getTempData(this.MESSAGE_BUILDER_KEY)) {
+      this.setTempData(this.MESSAGE_BUILDER_KEY, new MessageBuilder({ id: this.getReplyMessageId() }));
+    }
+    return this.getTempData<MessageBuilder>(this.MESSAGE_BUILDER_KEY)!;
+  }
+
+  /**
+   * @deprecated 使用 context.appId 替代
+   */
   get app() {
-    return this.session.app;
+    return this.appId;
+  }
+
+  get appId() {
+    return this.application.appId;
+  }
+
+  get isSessionChanged() {
+    return this.session.isSessionIdChanged;
   }
 
   /**
    * 获取当前激活的agent的memory
    */
   get memory() {
-    const agentName = this.agent?.name || "<null>";
-    const mem = this.agentMemories[agentName];
+    const agentId = this.agent?.agentId || "<null>";
+    const mem = this.agentMemories[agentId];
     if (!mem) {
-      this.agentMemories[agentName] = new Memory();
+      this.agentMemories[agentId] = new Memory();
     }
-    return this.agentMemories[agentName];
+    return this.agentMemories[agentId];
   }
 
   // 变化的槽
@@ -133,8 +195,15 @@ export class Context {
     return this.lastMessage.fromUser;
   }
 
+  /**
+   * @deprecated 请使用 agentId 替代
+   */
   get agentName() {
-    return this.agent?.name;
+    return this.agent?.agentId;
+  }
+
+  get agentId() {
+    return this.agent?.agentId;
   }
 
   /**
@@ -152,12 +221,29 @@ export class Context {
     }
   }
 
+  private _prevRepliedMessage: IMessage | null = null;
+
+  /**
+   * 上一次调用reply发送的消息
+   */
+  get prevRepliedMessage(): Readonly<IMessage> | null {
+    return this._prevRepliedMessage;
+  }
+
+  /**
+   * 获取当前应用实例
+   */
+  readonly application: Application;
+
+  createId: () => string;
+
   constructor(config: ContextConfig) {
     this.session = config.session;
     this.socket = config.socket;
     this.payload = config.payload;
-    this.router = config.router;
     this.background = config.payload.data?.background || false;
+    this.application = config.application;
+    this.createId = config.createId || this.session?.createId || (() => Math.random().toString(36).slice(2));
   }
 
   private mergeMessageNlu() {
@@ -165,7 +251,7 @@ export class Context {
       return;
     }
     const { intent, slots, entities } = this.lastMessage.nlu;
-    if (intent && typeof intent === "string") {
+    if (intent) {
       this.setIntent(intent);
     }
     if (slots) {
@@ -187,14 +273,14 @@ export class Context {
    * @param key
    * @param value
    */
-  setTempData<T>(key: string, value: T) {
+  setTempData<T>(key: string | symbol, value: T) {
     this.temp.set(key, value);
   }
 
   /**
    * 获取临时变量
    */
-  getTempData<T>(key: string): T | undefined {
+  getTempData<T>(key: string | symbol): T | undefined {
     return this.temp.get(key) as T;
   }
 
@@ -204,7 +290,7 @@ export class Context {
    * @param value
    * @returns
    */
-  getOrSetTempData<T>(key: string, value: T): T {
+  getOrSetTempData<T>(key: string | symbol, value: T): T {
     if (this.temp.has(key)) {
       return this.temp.get(key) as T;
     }
@@ -236,11 +322,11 @@ export class Context {
 
   /**
    * 获取特定 Agent的存储
-   * @param agentName
+   * @param agentId
    * @returns
    */
-  getAgentMemory(agentName: string) {
-    return this.agentMemories[agentName]?.toObject() || {};
+  getAgentMemory(agentId: string) {
+    return this.agentMemories[agentId]?.toObject() || {};
   }
 
   getForm<T extends IFormConfig>(name: string) {
@@ -297,17 +383,19 @@ export class Context {
   /**
    * 激活特定Agent，切换agent时，重置nlu为最近一条消息
    */
-  async activateAgent(agent: Agent | string | null, withIntent?: string) {
+  async activateAgent(agent: Agent | string | null, withIntent?: string | symbol) {
     const latestAgent = this.agentHistories[this.agentHistories.length - 1];
     let current: Agent | null;
     if (typeof agent === "string") {
-      current = this.router?.agents[agent] || null;
+      current = this.application.agents[agent] || null;
     } else {
       current = agent;
     }
-    if (latestAgent?.agentName !== current?.name) {
+    if (latestAgent?.agentId !== current?.agentId) {
+      const agentId = current?.agentId || "<null>";
       this.agentHistories.push({
-        agentName: current?.name || "<null>",
+        agentId: agentId,
+        agentName: agentId,
         activatedAt: Date.now(),
       });
       await this.agent?.leave(this);
@@ -359,14 +447,25 @@ export class Context {
   async routeTo(agent: Agent | string, data?: INLU | Task<unknown>) {
     let toAgent: Agent | null;
     if (typeof agent === "string") {
-      toAgent = this.router?.agents[agent] || null;
+      toAgent = this.application.agents[agent] || null;
     } else {
       toAgent = agent;
     }
+    // 如果没有该agent，则使用fallbackAgent
+    if (!toAgent && this.application.fallbackAgent) {
+      toAgent = this.application.fallbackAgent;
+    }
+
+    // 如果没有可路由的agent，则抛出错误
+    if (!toAgent) {
+      const agentId = typeof agent === "string" ? agent : agent?.agentId;
+      throw new Error(`Agent ${agentId} not exists`);
+    }
+
     // 防止死循环，相同agent不能连续路由
     if (toAgent !== this.agent) {
       this.routeTimes++;
-      await this.activateAgent(toAgent, Task.isTask(data) ? undefined : (typeof data?.intent === 'string' ? data.intent : undefined));
+      await this.activateAgent(toAgent, Task.isTask(data) ? undefined : data?.intent);
       if (toAgent) {
         await toAgent.execute(this, data);
       }
@@ -379,7 +478,7 @@ export class Context {
    */
   async reRoute() {
     if (this.agent) {
-      this.missMatchedAgents.add(this.agent?.name);
+      this.missMatchedAgents.add(this.agent?.agentId);
     }
     return this.router?.execute(this);
   }
@@ -397,7 +496,7 @@ export class Context {
    * @param intent
    * @returns
    */
-  async next(intent: string) {
+  async next(intent: string | symbol) {
     this.setIntent(intent);
     return this.agent?.executeHandler(this, intent);
   }
@@ -430,7 +529,7 @@ export class Context {
         return prev;
       }, {} as Record<string, Memory>);
       const agentHistories: AgentHistory[] = data.agentHistories || [];
-      this.prevMessageAgent = agentHistories[agentHistories.length - 1]?.agentName;
+      this.prevMessageAgent = agentHistories[agentHistories.length - 1]?.agentId;
       this._histories = data.histories || [];
       this.agentMemories = agentMemories;
       // 历史消息不包含当前消息
@@ -458,7 +557,7 @@ export class Context {
     }
     const memories = this.getMemoriesObject();
     await this.session.saveContextData({
-      app: this.app,
+      app: this.appId,
       sessionId: this.session.sessionId,
       dialogueId: this.session.dialogueId,
       userId: this.lastMessage.fromUser!,
@@ -478,12 +577,13 @@ export class Context {
       let merged = { ...message, ...partials };
       merged.persistent = merged.persistent !== false;
       merged = Object.assign(merged, {
-        agent: this.agentName,
-        app: this.app,
+        agent: this.agentId,
+        app: this.appId,
         sessionId: this.sessionId,
         dialogueId: this.session.dialogueId,
         background: this.agent?.isBackground() ? true : message.background,
       });
+      this._prevRepliedMessage = merged;
       this.socket.send(merged);
     }
   }
@@ -518,7 +618,7 @@ export class Context {
     throw new BreakError("Triggered by break()");
   }
 
-  setIntent(intent: string) {
+  setIntent(intent: string | symbol) {
     this.memory.setIntent(intent);
   }
 
