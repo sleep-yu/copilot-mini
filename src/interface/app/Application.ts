@@ -63,14 +63,7 @@ export class Application {
       return item;
     });
   }
-  /**
-   * @deprecated use `setClassifier` instead
-   * @param classifier
-   * @returns
-   */
-  setSceneClassifier(classifier: IClassifier) {
-    return this.setClassifier(classifier);
-  }
+
   fallbackAgent: Agent | undefined;
   /**
    * 注册Agent

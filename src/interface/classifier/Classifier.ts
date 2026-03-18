@@ -1,18 +1,24 @@
 import type { Context } from "../context";
+
 /**
  * 其他类别ID
  */
-export declare const UNKNOWN_SYMBOL: unique symbol;
+export const UNKNOWN_SYMBOL = Symbol("UNKNOWN");
+
 /**
  * FALLBACK类别ID
  */
-export declare const FALLBACK_SYMBOL: unique symbol;
-export declare const TASK_SYMBOL: unique symbol;
+export const FALLBACK_SYMBOL = Symbol("FALLBACK");
+
+export const TASK_SYMBOL = Symbol("TASK");
+
 export type Code = string | symbol;
+
 export interface IClassifierConfig {
   id: Code;
   params: unknown;
 }
+
 export interface IClassifier {
   id: string | symbol;
   /**
