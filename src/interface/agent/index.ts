@@ -1,2 +1,2 @@
 export * from './Agent'
-export * from './Classifier'
+export * from '../classifier/Classifier'

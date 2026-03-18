@@ -44,8 +44,7 @@ const MAIN_SYMBOL = Symbol("main");
  * ```
  */
 export class Agent {
-  constructor(public readonly name: string) { }
-
+  constructor(public readonly id: string, public readonly name?: string) { }
   protected formConfigs: Record<string, FormConfig> = {};
   protected slotsConfigs: Record<string, SlotConfig> = {};
   protected questionConfig: Record<string, typeof Question<any>> = {};
