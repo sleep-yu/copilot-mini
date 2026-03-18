@@ -3,9 +3,8 @@
   "LLM_API_BASE_URL": "",
   "LLM_API_KEY": "",
   "LLM_CLAUDE_API_KEY": "",
-  "AI_BASE_URL": "https://api-inference.modelscope.cn",
-  "AI_API_KEY": "ms-583690ce-6199-4b2a-946a-af10b5c34439",
-  "TAVILY_API_KEY": "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",
+  "AI_BASE_URL": "https://open.bigmodel.cn/api",
+  "AI_API_KEY": "d5b3b94848054e33830c5cf3eee185b1.XWAZ6Uo5FRkmviRD",
   "WECHAT_ERROR_KEY": "",
   "PORT": 62345
 }

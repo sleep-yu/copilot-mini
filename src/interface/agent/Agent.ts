@@ -5,7 +5,7 @@ import type { INLU } from "../messages";
 import { FALLBACK_SYMBOL, IClassifier } from "../classifier/Classifier";
 import { buildCommandIntent } from "../helpers/utils";
 import { IntentParser } from "./IntentParser";
-import { Handler, TaskHandler } from "../abstract";
+import type { Handler, TaskHandler } from "../abstract";
 import { Task } from "../Task";
 
 type HandlerClass = new (context: Context, agent: Agent) => Handler;
@@ -204,7 +204,10 @@ export class Agent {
   }
 
   private isHandlerClass(handler: IHandler): handler is HandlerClass {
-    return typeof handler === "function" && handler.prototype instanceof Handler;
+    // 使用鸭子类型检查，避免循环依赖问题
+    return typeof handler === "function" &&
+           handler.prototype &&
+           typeof handler.prototype.handle === "function";
   }
 
   /**
