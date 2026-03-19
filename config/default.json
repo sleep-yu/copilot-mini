@@ -1,10 +1,8 @@
 {
   "MONGODB_URL": "mongodb://localhost:27017/copilot",
-  "LLM_API_BASE_URL": "",
-  "LLM_API_KEY": "",
   "LLM_CLAUDE_API_KEY": "",
   "AI_BASE_URL": "https://open.bigmodel.cn/api",
-  "AI_API_KEY": "d5b3b94848054e33830c5cf3eee185b1.XWAZ6Uo5FRkmviRD",
+  "AI_API_KEY": "ca78a6808e5f4583ab685321a6fbc712.1M01pNTJYH0Geq8h",
   "WECHAT_ERROR_KEY": "",
   "PORT": 62345
 }
