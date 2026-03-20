@@ -141,6 +141,7 @@ export class Copilot {
         context.setHistories(histories);
         await context.save();
       }
+      socket.end();
     })
   }
 
