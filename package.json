@@ -19,6 +19,7 @@
   "homepage": "https://github.com/sleep-yu/copilot-mini#readme",
   "dependencies": {
     "@casstime/copilot-llmagent": "^1.0.4",
+    "@fastify/cors": "^11.2.0",
     "@types/react": "^19.2.14",
     "bunyan": "^1.8.15",
     "config": "^4.4.1",

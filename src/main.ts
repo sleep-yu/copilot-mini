@@ -1,19 +1,26 @@
 import fastify from "fastify";
+import cors from "@fastify/cors";
 import mongoose from 'mongoose';
 import { bindRoutes } from "./routes";
 import { bindHooks } from "./common/hooks";
 import { getEnvConfig } from "./common/utils/env";
 import config from 'config';
 
-const server = fastify({ logger: true });
-
-bindHooks(server);
-bindRoutes(server);
-
 const MONGODB_URL = getEnvConfig("MONGODB_URL") as string;
 const PORT = +(getEnvConfig("PORT") || 3000);
 
 async function start() {
+  const server = fastify({ logger: true });
+
+  // CORS 配置
+  await server.register(cors, {
+    origin: true,
+    credentials: true,
+  });
+
+  bindHooks(server);
+  bindRoutes(server);
+
   try {
     // Load Config
     const nodeEnv = config.util.getEnv("NODE_ENV");
