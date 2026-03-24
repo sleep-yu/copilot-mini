@@ -92,6 +92,7 @@ async function clearMessages(request: FastifyRequest, reply: FastifyReply) {
 export default async function sessionRoutes(server: FastifyInstance) {
   server.addHook('preHandler', authMiddleware);
 
+  // 获取会话列表
   server.get('/', {
     schema: {
       querystring: {
@@ -104,6 +105,7 @@ export default async function sessionRoutes(server: FastifyInstance) {
     },
   }, listSessions);
 
+  // 创建会话
   server.post('/', {
     schema: {
       body: {
@@ -116,8 +118,10 @@ export default async function sessionRoutes(server: FastifyInstance) {
     },
   }, createSession);
 
+  // 查询会话
   server.get('/:id', getSession);
 
+  // 修改会话
   server.put('/:id', {
     schema: {
       body: {
@@ -130,8 +134,10 @@ export default async function sessionRoutes(server: FastifyInstance) {
     },
   }, updateSession);
 
+  // 删除会话
   server.delete('/:id', deleteSession);
 
+  // 向指定会话添加消息
   server.post('/:id/messages', {
     schema: {
       body: {
@@ -145,5 +151,6 @@ export default async function sessionRoutes(server: FastifyInstance) {
     },
   }, addMessage);
 
+  // 清空指定会话
   server.delete('/:id/messages', clearMessages);
 }
