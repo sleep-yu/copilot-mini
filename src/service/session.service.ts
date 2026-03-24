@@ -1,8 +1,43 @@
 import { Session } from "@/model/Session";
 import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import config from 'config'
 
 const MESSAGE_ID_PREFIX = "msg-";
+const COPROCESSOR_HOST = 'http://localhost:62345';
+
+// 调用 copilot hook 接口生成回复
+async function generateAIResponse(userId: string, userMessage: string): Promise<string> {
+  try {
+    const response = await fetch(`${COPROCESSOR_HOST}/copilot/hook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        app: "QUESTION_ANSWER",
+        data: {
+          fromUser: userId,
+          type: "text",
+          content: userMessage
+        }
+      })
+    });
+    const result = await response.json();
+    console.log('Copilot Hook 返回:', JSON.stringify(result, null, 2));
+
+    if (!result.data?.messages || result.data.messages.length === 0) {
+      return '抱歉，服务暂时不可用，请稍后再试。';
+    }
+
+    // 找到 AI 的回复（fromUser 为 system）
+    const aiMessage = result.data.messages.find((m: any) => m.fromUser === 'system');
+    return aiMessage?.content || '抱歉，我没有理解您的问题。';
+  } catch (error) {
+    console.error('调用 Copilot Hook 失败:', error);
+    return '抱歉，服务暂时不可用，请稍后再试。';
+  }
+}
 
 export interface CreateSessionDto {
   title: string;
@@ -132,6 +167,25 @@ export const sessionService = {
 
     if (result.matchedCount === 0) {
       return { ok: false, error: "会话不存在或无权访问" } as const;
+    }
+
+    // 如果是用户消息，调用 AI 生成回复
+    if (dto.role === 'user') {
+      const aiResponse = await generateAIResponse(userId, dto.content);
+      const assistantMessage = {
+        id: MESSAGE_ID_PREFIX + uuidv4().replace(/-/g, "").slice(0, 12),
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: Date.now(),
+      };
+      await Session.updateOne(
+        { _id: new Types.ObjectId(sessionId) },
+        {
+          $push: { messages: assistantMessage },
+          $set: { updatedAt: new Date() },
+        }
+      );
+      return { ok: true, data: { user: message, assistant: assistantMessage } };
     }
 
     return { ok: true, data: message };
