@@ -22,11 +22,11 @@ interface ListQuery {
 }
 
 export const bindSessionRoutes = (server: FastifyInstance) => {
-  // All session routes require auth
-  server.addHook("preHandler", authMiddleware);
+  // Route-level auth middleware for each route
 
   // GET /api/sessions - List sessions
   server.get("/api/sessions", {
+    preHandler: authMiddleware,
     schema: {
       querystring: {
         type: "object",
@@ -46,6 +46,7 @@ export const bindSessionRoutes = (server: FastifyInstance) => {
 
   // POST /api/sessions - Create session
   server.post("/api/sessions", {
+    preHandler: authMiddleware,
     schema: {
       body: {
         type: "object",
@@ -63,7 +64,9 @@ export const bindSessionRoutes = (server: FastifyInstance) => {
   });
 
   // GET /api/sessions/:id - Get session detail
-  server.get<{ Params: SessionParams }>("/api/sessions/:id", async (request, reply) => {
+  server.get<{ Params: SessionParams }>("/api/sessions/:id", {
+    preHandler: authMiddleware,
+  }, async (request, reply) => {
     const userId = request.user!.userId;
     const { id } = request.params;
     const result = await sessionService.getById(userId, id);
@@ -75,6 +78,7 @@ export const bindSessionRoutes = (server: FastifyInstance) => {
 
   // PUT /api/sessions/:id - Update session
   server.put<{ Params: SessionParams; Body: UpdateSessionBody }>("/api/sessions/:id", {
+    preHandler: authMiddleware,
     schema: {
       body: {
         type: "object",
@@ -96,7 +100,9 @@ export const bindSessionRoutes = (server: FastifyInstance) => {
   });
 
   // DELETE /api/sessions/:id - Delete session
-  server.delete<{ Params: SessionParams }>("/api/sessions/:id", async (request, reply) => {
+  server.delete<{ Params: SessionParams }>("/api/sessions/:id", {
+    preHandler: authMiddleware,
+  }, async (request, reply) => {
     const userId = request.user!.userId;
     const { id } = request.params;
     const result = await sessionService.delete(userId, id);
@@ -108,6 +114,7 @@ export const bindSessionRoutes = (server: FastifyInstance) => {
 
   // POST /api/sessions/:id/messages - Add message
   server.post<{ Params: SessionParams; Body: AddMessageBody }>("/api/sessions/:id/messages", {
+    preHandler: authMiddleware,
     schema: {
       body: {
         type: "object",
@@ -130,7 +137,9 @@ export const bindSessionRoutes = (server: FastifyInstance) => {
   });
 
   // DELETE /api/sessions/:id/messages - Clear messages
-  server.delete<{ Params: SessionParams }>("/api/sessions/:id/messages", async (request, reply) => {
+  server.delete<{ Params: SessionParams }>("/api/sessions/:id/messages", {
+    preHandler: authMiddleware,
+  }, async (request, reply) => {
     const userId = request.user!.userId;
     const { id } = request.params;
     const result = await sessionService.clearMessages(userId, id);
