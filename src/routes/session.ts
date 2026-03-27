@@ -110,9 +110,9 @@ export default async function sessionRoutes(server: FastifyInstance) {
     schema: {
       body: {
         type: "object",
-        required: ["title"],
+        required: [],  // title 改为可选
         properties: {
-          title: { type: "string", maxLength: 100 },
+          title: { type: "string", maxLength: 100, default: "新对话" },
         },
       },
     },

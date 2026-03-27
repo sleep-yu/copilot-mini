@@ -85,7 +85,7 @@ export const sessionService = {
   async create(userId: string, dto: CreateSessionDto) {
     const session = await Session.create({
       userId: new Types.ObjectId(userId),
-      title: dto.title,
+      title: dto.title || '新对话',  // 默认标题
       messages: [],
     });
 
