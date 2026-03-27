@@ -31,12 +31,16 @@ export const authService = {
       nickname: nickname || "",
     });
 
+    // 注册成功后直接生成 token，实现自动登录
+    const token = generateToken({ userId: user._id.toString(), email: user.email });
+
     return {
       ok: true,
       data: {
         userId: user._id.toString(),
         email: user.email,
         nickname: user.nickname,
+        token,  // 返回 token，前端可直接使用
       },
     } as const;
   },
