@@ -3,7 +3,13 @@ import jwt from "jsonwebtoken";
 import { getEnvConfig } from "@/common/utils/env";
 import { fail, ErrorCode } from "@/utils/response";
 
-const JWT_SECRET = getEnvConfig("JWT_SECRET") as string || "copilot-mini-secret-key";
+const JWT_SECRET = (() => {
+  const secret = getEnvConfig("JWT_SECRET") as string;
+  if (!secret) {
+    throw new Error("JWT_SECRET not configured");
+  }
+  return secret;
+})();
 
 export interface JwtPayload {
   userId: string;

@@ -8,7 +8,7 @@ export const errorHandler = (error: FastifyError, request: FastifyRequest, reply
   logger.warn("API Error:", error.message, error.stack);
 
   if (error.validation) {
-    reply.status(200).send(
+    reply.status(400).send(
       ResponseFactory.error({
         errorCode: ErrorCode.VALIDATION_ERROR,
         data: error.validation?.[0],

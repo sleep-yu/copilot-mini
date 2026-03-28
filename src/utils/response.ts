@@ -18,10 +18,12 @@ export const fail = (
   reply: FastifyReply,
   code: number,
   message: string,
-  statusCode = 400
+  statusCode: number = 400
 ) => {
   // 4xx/5xx 错误走 errorCode 字段，前端直接用 errorCode 判断
-  return reply.status(statusCode).send({ errorCode: statusCode, code, message, data: null });
+  // 确保 HTTP 状态码不被 preSerialization 链覆盖
+  reply.statusCode = statusCode;
+  return reply.send({ errorCode: statusCode, code, message, data: null });
 };
 
 export const ErrorCode = {
