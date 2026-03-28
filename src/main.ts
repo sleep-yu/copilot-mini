@@ -1,3 +1,5 @@
+import { config } from 'dotenv';
+config({ path: '/www/wwwroot/copilot-mini/.env' });
 import 'dotenv/config';
 import fastify from "fastify";
 import cors from "@fastify/cors";
