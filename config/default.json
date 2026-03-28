@@ -1,6 +1,7 @@
 {
   "MONGODB_URL": "mongodb://localhost:27017/copilot",
   "LLM_CLAUDE_API_KEY": "",
+  "AI_MODEL": "glm-4.7",
   "AI_BASE_URL": "https://open.bigmodel.cn/api",
   "AI_API_KEY": "ca78a6808e5f4583ab685321a6fbc712.1M01pNTJYH0Geq8h",
   "WECHAT_ERROR_KEY": "",

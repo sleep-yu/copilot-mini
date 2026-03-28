@@ -1,1 +1,0 @@
-export { default as QuestionAnswerApp } from "./QAAssistant";

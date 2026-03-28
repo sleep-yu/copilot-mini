@@ -1,43 +1,9 @@
 import { Session } from "@/model/Session";
 import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import config from 'config'
+import { aiService } from "./ai.service";
 
 const MESSAGE_ID_PREFIX = "msg-";
-const COPROCESSOR_HOST = 'http://localhost:62345';
-
-// 调用 copilot hook 接口生成回复
-async function generateAIResponse(userId: string, userMessage: string): Promise<string> {
-  try {
-    const response = await fetch(`${COPROCESSOR_HOST}/copilot/hook`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        app: "QUESTION_ANSWER",
-        data: {
-          fromUser: userId,
-          type: "text",
-          content: userMessage
-        }
-      })
-    });
-    const result = await response.json();
-    console.log('Copilot Hook 返回:', JSON.stringify(result, null, 2));
-
-    if (!result.data?.messages || result.data.messages.length === 0) {
-      return '抱歉，服务暂时不可用，请稍后再试。';
-    }
-
-    // 找到 AI 的回复（fromUser 为 system）
-    const aiMessage = result.data.messages.find((m: any) => m.fromUser === 'system');
-    return aiMessage?.content || '抱歉，我没有理解您的问题。';
-  } catch (error) {
-    console.error('调用 Copilot Hook 失败:', error);
-    return '抱歉，服务暂时不可用，请稍后再试。';
-  }
-}
 
 export interface CreateSessionDto {
   title: string;
@@ -85,7 +51,7 @@ export const sessionService = {
   async create(userId: string, dto: CreateSessionDto) {
     const session = await Session.create({
       userId: new Types.ObjectId(userId),
-      title: dto.title || '新对话',  // 默认标题
+      title: dto.title || '新对话',
       messages: [],
     });
 
@@ -171,11 +137,11 @@ export const sessionService = {
 
     // 如果是用户消息，调用 AI 生成回复
     if (dto.role === 'user') {
-      const aiResponse = await generateAIResponse(userId, dto.content);
+      const aiResult = await aiService.ask({ userId, message: dto.content });
       const assistantMessage = {
         id: MESSAGE_ID_PREFIX + uuidv4().replace(/-/g, "").slice(0, 12),
         role: 'assistant',
-        content: aiResponse,
+        content: aiResult.ok && aiResult.content ? aiResult.content : (aiResult.error || '抱歉，服务暂时不可用。'),
         timestamp: Date.now(),
       };
       await Session.updateOne(
