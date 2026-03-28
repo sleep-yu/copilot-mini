@@ -1,5 +1,4 @@
 import { config } from 'dotenv';
-config({ path: '/www/wwwroot/copilot-mini/.env' });
 import 'dotenv/config';
 import fastify from "fastify";
 import cors from "@fastify/cors";
@@ -7,6 +6,7 @@ import mongoose from 'mongoose';
 import { bindRoutes } from "./routes";
 import { bindHooks } from "./common/hooks";
 import { getEnvConfig } from "./common/utils/env";
+config(); // dotenv 自动在 cwd 目录找 .env
 
 const MONGODB_URL = getEnvConfig("MONGODB_URL") as string;
 const PORT = +(getEnvConfig("PORT") || 3000);
