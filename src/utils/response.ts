@@ -20,7 +20,8 @@ export const fail = (
   message: string,
   statusCode = 400
 ) => {
-  return reply.status(statusCode).send({ code, message, data: null });
+  // 4xx/5xx 错误走 errorCode 字段，前端直接用 errorCode 判断
+  return reply.status(statusCode).send({ errorCode: statusCode, code, message, data: null });
 };
 
 export const ErrorCode = {
