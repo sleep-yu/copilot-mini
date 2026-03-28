@@ -1,7 +1,5 @@
 import config from 'config'
 
-const AI_BASE_URL = config.get('AI_BASE_URL') as string;
-const AI_API_KEY = config.get('AI_API_KEY') as string;
 const AI_MODEL = config.get('AI_MODEL') as string || 'glm-4.7';
 
 export interface AskOptions {
@@ -20,6 +18,10 @@ export const aiService = {
    * 调用智谱大模型生成回复
    */
   async ask({ userId, message }: AskOptions): Promise<AskResult> {
+    // 运行时读取，确保 dotenv 已加载
+    const AI_BASE_URL = process.env.AI_BASE_URL || config.get('AI_BASE_URL') as string;
+    const AI_API_KEY = process.env.AI_API_KEY || config.get('AI_API_KEY') as string;
+
     try {
       const url = `${AI_BASE_URL}/paas/v4/chat/completions`;
       const response = await fetch(url, {
