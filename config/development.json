@@ -1,0 +1,7 @@
+{
+  "MONGODB_URL": "mongodb://localhost:27017/copilot",
+  "PORT": 62345,
+  "AI_MODEL": "glm-4.7",
+  "AI_BASE_URL": "https://open.bigmodel.cn/api",
+  "JWT_SECRET": "copilot-mini-jwt-secret-key-2024-dev"
+}

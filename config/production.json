@@ -1,5 +1,4 @@
 {
-  "_comment": "默认配置 - 仅包含非敏感项，敏感值请在 .env 中配置（不会被 git 跟踪）",
   "MONGODB_URL": "mongodb://localhost:27017/copilot",
   "PORT": 62345,
   "AI_MODEL": "glm-4.7",
