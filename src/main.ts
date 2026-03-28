@@ -5,7 +5,6 @@ import mongoose from 'mongoose';
 import { bindRoutes } from "./routes";
 import { bindHooks } from "./common/hooks";
 import { getEnvConfig } from "./common/utils/env";
-import copilotRoutes from "./routes/copilot";
 
 const MONGODB_URL = getEnvConfig("MONGODB_URL") as string;
 const PORT = +(getEnvConfig("PORT") || 3000);
@@ -21,7 +20,6 @@ async function start() {
   });
 
   bindHooks(server);
-  server.register(copilotRoutes);
   bindRoutes(server);
 
   try {
