@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { sessionService } from "@/service/session.service";
-import { authMiddleware } from "@/middleware/auth";
-import { success, created, fail, ErrorCode } from "@/utils/response";
+import { sessionService } from "../service/session.service";
+import { authMiddleware } from "../middleware/auth";
+import { success, created, fail, ErrorCode } from "../utils/response";
 
 interface SessionParams {
   id: string;

@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { aiService } from "@/service/ai.service";
+import { aiService } from "../service/ai.service";
 
 interface CopilotPayload {
   app?: string;

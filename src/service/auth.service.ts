@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import { User } from "@/model/User";
-import { generateToken } from "@/middleware/auth";
+import { User } from "../model/User";
+import { generateToken } from "../middleware/auth";
 
 const SALT_ROUNDS = 10;
 

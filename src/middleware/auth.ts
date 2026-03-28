@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import jwt from "jsonwebtoken";
-import { getEnvConfig } from "@/common/utils/env";
-import { fail, ErrorCode } from "@/utils/response";
+import { getEnvConfig } from "../common/utils/env";
+import { fail, ErrorCode } from "../utils/response";
 
 const JWT_SECRET = (() => {
   const secret = getEnvConfig("JWT_SECRET") as string;

@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { authService } from "@/service/auth.service";
-import { authMiddleware } from "@/middleware/auth";
-import { success, created, fail, ErrorCode } from "@/utils/response";
+import { authService } from "../service/auth.service";
+import { authMiddleware } from "../middleware/auth";
+import { success, created, fail, ErrorCode } from "../utils/response";
 
 const registerSchema = {
   body: {
