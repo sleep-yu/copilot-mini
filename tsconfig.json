@@ -14,5 +14,12 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "noEmitOnError": false
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
 }
