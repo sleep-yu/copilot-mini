@@ -11,11 +11,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build
-        run: |
-          npm ci
-          npx tsc
-
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -29,4 +24,6 @@ jobs:
             export PATH="/www/server/nodejs/v14.17.6/lib/node_modules/pm2/bin:/www/server/nodejs/v14.17.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
             cd /www/wwwroot/copilot-mini
             git pull origin main || git fetch origin main && git reset --hard origin/main
-            pm2 restart copilot-mini || pm2 start /www/wwwroot/copilot-mini/dist/main.js --name copilot-mini
+            npm ci
+            npx tsc
+            pm2 restart copilot-mini || pm2 start dist/main.js --name copilot-mini
