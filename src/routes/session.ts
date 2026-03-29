@@ -72,11 +72,14 @@ async function addMessage(request: FastifyRequest, reply: FastifyReply) {
   // 1. 写用户消息入库
   await sessionService.addUserMessage(userId, sessionId, content);
 
-  // 2. 设置 SSE 响应头
+  // 2. 设置 SSE 响应头（显式加 CORS 头，避免被中间件拦截）
   reply.raw.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',           // 禁用 Nginx buffering
+    'Access-Control-Allow-Origin': '*',   // 允许跨域
+    'Access-Control-Allow-Credentials': 'false',
   });
 
   // 3. 调 AI 流式 API，边收边存边推
