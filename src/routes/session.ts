@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { sessionService } from "../service/session.service";
+import { aiService } from "../service/ai.service";
 import { authMiddleware } from "../middleware/auth";
 import { success, created, fail, ErrorCode } from "../utils/response";
 
@@ -9,11 +10,6 @@ interface SessionParams {
 
 interface UpdateSessionBody {
   title: string;
-}
-
-interface AddMessageBody {
-  role: "user" | "assistant";
-  content: string;
 }
 
 interface ListQuery {
@@ -70,13 +66,39 @@ async function deleteSession(request: FastifyRequest, reply: FastifyReply) {
 
 async function addMessage(request: FastifyRequest, reply: FastifyReply) {
   const userId = request.user!.userId;
-  const { id } = request.params as SessionParams;
-  const { role, content } = request.body as AddMessageBody;
-  const result = await sessionService.addMessage(userId, id, { role, content });
-  if (!result.ok) {
-    return fail(reply, ErrorCode.NOT_FOUND, result.error!, 404);
+  const { id: sessionId } = request.params as SessionParams;
+  const { content } = request.body as { content: string };
+
+  // 1. 写用户消息入库
+  await sessionService.addUserMessage(userId, sessionId, content);
+
+  // 2. 设置 SSE 响应头
+  reply.raw.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+  });
+
+  // 3. 调 AI 流式 API，边收边存边推
+  let fullContent = '';
+  const messageId = `msg-${Date.now()}`;
+
+  try {
+    for await (const chunk of aiService.askStream({ userId, message: content })) {
+      fullContent += chunk;
+      // 边存：每个 chunk 都更新数据库
+      await sessionService.saveAssistantMessage(userId, sessionId, messageId, fullContent);
+      // 边推：推送完整累积内容（容错，前端直接覆盖）
+      reply.raw.write(`data: ${JSON.stringify({ id: messageId, role: 'assistant', content: fullContent })}\n\n`);
+    }
+  } catch (err) {
+    console.error('AI 流式请求失败:', err);
+    reply.raw.write(`data: ${JSON.stringify({ error: true, content: '抱歉，服务暂时不可用。' })}\n\n`);
   }
-  return created(reply, result.data);
+
+  // 4. 流结束，推送 done 信号
+  reply.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+  reply.raw.end();
 }
 
 
@@ -128,14 +150,13 @@ export default async function sessionRoutes(server: FastifyInstance) {
   // 删除会话
   server.delete('/:id', deleteSession);
 
-  // 向指定会话添加消息
+  // 向指定会话发送消息（流式）
   server.post('/:id/messages', {
     schema: {
       body: {
         type: "object",
-        required: ["role", "content"],
+        required: ["content"],
         properties: {
-          role: { type: "string", enum: ["user", "assistant"] },
           content: { type: "string" },
         },
       },

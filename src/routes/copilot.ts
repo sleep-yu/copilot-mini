@@ -41,7 +41,7 @@ const copilotHookSchema = {
 
 async function copilotHook(request: FastifyRequest, reply: FastifyReply) {
   const payload = request.body as CopilotPayload;
-  const { app, data } = payload;
+  const { data } = payload;
   const fromUser = data.fromUser || "anonymous";
   const content = data.content || "";
 

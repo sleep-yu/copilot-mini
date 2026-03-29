@@ -20,6 +20,7 @@ export interface ListSessionsQuery {
 }
 
 export const sessionService = {
+
   async list(userId: string, query: ListSessionsQuery = {}) {
     const page = Math.max(1, query.page || 1);
     const pageSize = Math.min(100, Math.max(1, query.pageSize || 20));
@@ -115,46 +116,44 @@ export const sessionService = {
     return { ok: true };
   },
 
-  async addMessage(userId: string, sessionId: string, dto: AddMessageDto) {
+  /**
+   * 写用户消息入库（流开始时调用）
+   */
+  async addUserMessage(userId: string, sessionId: string, content: string) {
     const message = {
-      id: MESSAGE_ID_PREFIX + uuidv4().replace(/-/g, "").slice(0, 12),
-      role: dto.role,
-      content: dto.content,
+      id: MESSAGE_ID_PREFIX + uuidv4().replace(/-/g, '').slice(0, 12),
+      role: 'user' as const,
+      content,
       timestamp: Date.now(),
     };
-
     const result = await Session.updateOne(
       { _id: new Types.ObjectId(sessionId), userId: new Types.ObjectId(userId) },
-      {
-        $push: { messages: message },
-        $set: { updatedAt: new Date() },
-      }
+      { $push: { messages: message }, $set: { updatedAt: new Date() } }
     );
+    if (result.matchedCount === 0) throw new Error('会话不存在或无权访问');
+    return message;
+  },
 
-    if (result.matchedCount === 0) {
-      return { ok: false, error: "会话不存在或无权访问" } as const;
+  /**
+   * 边收边存助手消息（每个 AI chunk 都调用）
+   * 首次调用时创建 message，后续调用更新 content
+   */
+  async saveAssistantMessage(userId: string, sessionId: string, messageId: string, content: string) {
+    const session = await Session.findOne({
+      _id: new Types.ObjectId(sessionId),
+      userId: new Types.ObjectId(userId),
+    });
+    if (!session) throw new Error('会话不存在或无权访问');
+
+    const existingIdx = session.messages.findIndex(m => m.id === messageId);
+    if (existingIdx === -1) {
+      session.messages.push({ id: messageId, role: 'assistant' as const, content, timestamp: Date.now() });
+    } else {
+      session.messages[existingIdx].content = content;
+      session.messages[existingIdx].timestamp = Date.now();
     }
-
-    // 如果是用户消息，调用 AI 生成回复
-    if (dto.role === 'user') {
-      const aiResult = await aiService.ask({ userId, message: dto.content });
-      const assistantMessage = {
-        id: MESSAGE_ID_PREFIX + uuidv4().replace(/-/g, "").slice(0, 12),
-        role: 'assistant',
-        content: aiResult.ok && aiResult.content ? aiResult.content : (aiResult.error || '抱歉，服务暂时不可用。'),
-        timestamp: Date.now(),
-      };
-      await Session.updateOne(
-        { _id: new Types.ObjectId(sessionId) },
-        {
-          $push: { messages: assistantMessage },
-          $set: { updatedAt: new Date() },
-        }
-      );
-      return { ok: true, data: { user: message, assistant: assistantMessage } };
-    }
-
-    return { ok: true, data: message };
+    session.updatedAt = new Date();
+    await session.save();
   },
 
 };

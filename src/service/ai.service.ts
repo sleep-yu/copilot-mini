@@ -59,6 +59,59 @@ export const aiService = {
   },
 
   /**
+   * 流式调用智谱大模型，逐 chunk yield 增量内容
+   */
+  async *askStream({ message }: { userId: string; message: string }): AsyncGenerator<string> {
+    const AI_BASE_URL = process.env.AI_BASE_URL || config.get('AI_BASE_URL') as string;
+    const AI_API_KEY = process.env.AI_API_KEY || config.get('AI_API_KEY') as string;
+
+    const response = await fetch(`${AI_BASE_URL}/paas/v4/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${AI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        stream: true,
+        messages: [{ role: 'user', content: message }],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI 服务 HTTP 错误: ${response.status}`);
+    }
+
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // 按 SSE 行分割
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6);
+        if (data === '[DONE]') return;
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed.choices?.[0]?.delta?.content;
+          if (content) yield content;
+        } catch {
+          // 解析失败跳过
+        }
+      }
+    }
+  },
+
+  /**
    * 调用 copilot-hook（如果将来需要走原有协议）
    */
   async callCopilotHook(params: {
