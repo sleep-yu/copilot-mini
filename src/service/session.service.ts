@@ -1,7 +1,6 @@
 import { Session } from "../model/Session";
 import { Types } from "mongoose";
-import { v4 as uuidv4 } from "uuid";
-import { aiService } from "./ai.service";
+
 
 const MESSAGE_ID_PREFIX = "msg-";
 
@@ -52,7 +51,7 @@ export const sessionService = {
   async create(userId: string, dto: CreateSessionDto) {
     const session = await Session.create({
       userId: new Types.ObjectId(userId),
-      title: dto.title || '新对话',
+      title: dto.title || "新对话",
       messages: [],
     });
 
@@ -121,8 +120,8 @@ export const sessionService = {
    */
   async addUserMessage(userId: string, sessionId: string, content: string) {
     const message = {
-      id: MESSAGE_ID_PREFIX + uuidv4().replace(/-/g, '').slice(0, 12),
-      role: 'user' as const,
+      id: MESSAGE_ID_PREFIX + uuidv4().replace(/-/g, "").slice(0, 12),
+      role: "user" as const,
       content,
       timestamp: Date.now(),
     };
@@ -130,7 +129,7 @@ export const sessionService = {
       { _id: new Types.ObjectId(sessionId), userId: new Types.ObjectId(userId) },
       { $push: { messages: message }, $set: { updatedAt: new Date() } }
     );
-    if (result.matchedCount === 0) throw new Error('会话不存在或无权访问');
+    if (result.matchedCount === 0) throw new Error("会话不存在或无权访问");
     return message;
   },
 
@@ -143,11 +142,11 @@ export const sessionService = {
       _id: new Types.ObjectId(sessionId),
       userId: new Types.ObjectId(userId),
     });
-    if (!session) throw new Error('会话不存在或无权访问');
+    if (!session) throw new Error("会话不存在或无权访问");
 
-    const existingIdx = session.messages.findIndex(m => m.id === messageId);
+    const existingIdx = session.messages.findIndex((m) => m.id === messageId);
     if (existingIdx === -1) {
-      session.messages.push({ id: messageId, role: 'assistant' as const, content, timestamp: Date.now() });
+      session.messages.push({ id: messageId, role: "assistant" as const, content, timestamp: Date.now() });
     } else {
       session.messages[existingIdx].content = content;
       session.messages[existingIdx].timestamp = Date.now();

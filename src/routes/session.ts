@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { sessionService } from "../service/session.service";
 import { aiService } from "../service/ai.service";
 import { authMiddleware } from "../middleware/auth";
-import { success, created, fail, ErrorCode } from "../utils/response";
 
 interface SessionParams {
   id: string;
@@ -17,153 +16,116 @@ interface ListQuery {
   pageSize?: string;
 }
 
-async function listSessions(request: FastifyRequest, reply: FastifyReply) {
-  const userId = request.user!.userId;
-  const query = request.query as ListQuery;
-  const page = query.page ? parseInt(String(query.page)) : 1;
-  const pageSize = query.pageSize ? parseInt(String(query.pageSize)) : 20;
-  const result = await sessionService.list(userId, { page, pageSize });
-  return success(reply, result.data);
-}
-
-async function createSession(request: FastifyRequest, reply: FastifyReply) {
-  const userId = request.user!.userId;
-  const { title } = request.body as { title: string };
-  const result = await sessionService.create(userId, { title });
-  return created(reply, result.data, "创建成功");
-}
-
-async function getSession(request: FastifyRequest, reply: FastifyReply) {
-  const userId = request.user!.userId;
-  const { id } = request.params as SessionParams;
-  const result = await sessionService.getById(userId, id);
-  if (!result.ok) {
-    return fail(reply, ErrorCode.NOT_FOUND, result.error!, 404);
-  }
-  return success(reply, result.data);
-}
-
-async function updateSession(request: FastifyRequest, reply: FastifyReply) {
-  const userId = request.user!.userId;
-  const { id } = request.params as SessionParams;
-  const { title } = request.body as UpdateSessionBody;
-  const result = await sessionService.update(userId, id, title);
-  if (!result.ok) {
-    return fail(reply, ErrorCode.NOT_FOUND, result.error!, 404);
-  }
-  return success(reply, undefined, "更新成功");
-}
-
-async function deleteSession(request: FastifyRequest, reply: FastifyReply) {
-  const userId = request.user!.userId;
-  const { id } = request.params as SessionParams;
-  const result = await sessionService.delete(userId, id);
-  if (!result.ok) {
-    return fail(reply, ErrorCode.NOT_FOUND, result.error!, 404);
-  }
-  return success(reply, undefined, "删除成功");
-}
-
-async function addMessage(request: FastifyRequest, reply: FastifyReply) {
-  const userId = request.user!.userId;
-  const { id: sessionId } = request.params as SessionParams;
-  const { content } = request.body as { content: string };
-
-  // 1. 写用户消息入库
-  await sessionService.addUserMessage(userId, sessionId, content);
-
-  // 2. 设置 SSE 响应头（显式加 CORS 头，避免被中间件拦截）
-  reply.raw.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no',           // 禁用 Nginx buffering
-    'Access-Control-Allow-Origin': '*',   // 允许跨域
-    'Access-Control-Allow-Credentials': 'false',
+export async function sessionRoutes(server: FastifyInstance) {
+  server.get("/sessions", {
+    preHandler: authMiddleware,
+  }, async (request: FastifyRequest<{ Querystring: ListQuery }>, reply: FastifyReply) => {
+    const userId = request.user!.userId;
+    const { page, pageSize } = request.query;
+    const result = await sessionService.list(userId, {
+      page: page ? parseInt(page) : undefined,
+      pageSize: pageSize ? parseInt(pageSize) : undefined,
+    });
+    return reply.send(result);
   });
 
-  // 3. 调 AI 流式 API，边收边存边推
-  let fullContent = '';
-  const messageId = `msg-${Date.now()}`;
+  server.post("/sessions", {
+    preHandler: authMiddleware,
+  }, async (request: FastifyRequest<{ Body: { title?: string } }>, reply: FastifyReply) => {
+    const userId = request.user!.userId;
+    const result = await sessionService.create(userId, request.body);
+    return reply.code(201).send(result);
+  });
 
-  try {
-    for await (const chunk of aiService.askStream({ userId, message: content })) {
-      fullContent += chunk;
-      // 边存：每个 chunk 都更新数据库
-      await sessionService.saveAssistantMessage(userId, sessionId, messageId, fullContent);
-      // 边推：推送完整累积内容（容错，前端直接覆盖）
-      reply.raw.write(`data: ${JSON.stringify({ id: messageId, role: 'assistant', content: fullContent })}\n\n`);
+  server.get<{ Params: SessionParams }>("/sessions/:id", {
+    preHandler: authMiddleware,
+  }, async (request, reply: FastifyReply) => {
+    const userId = request.user!.userId;
+    const { id } = request.params;
+    const result = await sessionService.getById(userId, id);
+    if (!result.ok) {
+      return reply.code(404).send(result);
     }
-  } catch (err) {
-    console.error('AI 流式请求失败:', err);
-    reply.raw.write(`data: ${JSON.stringify({ error: true, content: '抱歉，服务暂时不可用。' })}\n\n`);
-  }
+    return reply.send(result);
+  });
 
-  // 4. 流结束，推送 done 信号
-  reply.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-  reply.raw.end();
-}
+  server.put<{ Params: SessionParams; Body: UpdateSessionBody }>("/sessions/:id", {
+    preHandler: authMiddleware,
+  }, async (request, reply: FastifyReply) => {
+    const userId = request.user!.userId;
+    const { id } = request.params;
+    const { title } = request.body;
+    const result = await sessionService.update(userId, id, title);
+    if (!result.ok) {
+      return reply.code(404).send(result);
+    }
+    return reply.send(result);
+  });
 
+  server.delete<{ Params: SessionParams }>("/sessions/:id", {
+    preHandler: authMiddleware,
+  }, async (request, reply: FastifyReply) => {
+    const userId = request.user!.userId;
+    const { id } = request.params;
+    const result = await sessionService.delete(userId, id);
+    if (!result.ok) {
+      return reply.code(404).send(result);
+    }
+    return reply.send({ ok: true });
+  });
 
-export default async function sessionRoutes(server: FastifyInstance) {
-  server.addHook('preHandler', authMiddleware);
-
-  // 获取会话列表
-  server.get('/', {
-    schema: {
-      querystring: {
-        type: "object",
-        properties: {
-          page: { type: "integer", minimum: 1, default: 1 },
-          pageSize: { type: "integer", minimum: 1, maximum: 100, default: 20 },
+  // 流式发送消息：POST /sessions/:id/messages
+  server.post<{ Params: SessionParams; Body: { content: string } }>(
+    "/sessions/:id/messages",
+    {
+      schema: {
+        body: {
+          type: "object",
+          required: ["content"],
+          properties: {
+            content: { type: "string" },
+          },
         },
       },
+      preHandler: authMiddleware,
     },
-  }, listSessions);
+    async (request, reply: FastifyReply) => {
+      const userId = request.user!.userId;
+      const { id: sessionId } = request.params;
+      const { content } = request.body;
 
-  // 创建会话
-  server.post('/', {
-    schema: {
-      body: {
-        type: "object",
-        required: [],  // title 改为可选
-        properties: {
-          title: { type: "string", maxLength: 100, default: "新对话" },
-        },
-      },
-    },
-  }, createSession);
+      // 1. 写用户消息入库
+      await sessionService.addUserMessage(userId, sessionId, content);
 
-  // 查询会话
-  server.get('/:id', getSession);
+      // 2. 设置 SSE 响应头
+      reply.raw.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+        "Access-Control-Allow-Origin": "*",
+      });
 
-  // 修改会话
-  server.put('/:id', {
-    schema: {
-      body: {
-        type: "object",
-        required: ["title"],
-        properties: {
-          title: { type: "string", maxLength: 100 },
-        },
-      },
-    },
-  }, updateSession);
+      // 3. 调 AI 流式 API，边收边存边推
+      let fullContent = "";
+      const messageId = `msg-${Date.now()}`;
 
-  // 删除会话
-  server.delete('/:id', deleteSession);
+      try {
+        for await (const chunk of aiService.askStream({ userId, message: content })) {
+          fullContent += chunk;
+          // 边存
+          await sessionService.saveAssistantMessage(userId, sessionId, messageId, fullContent);
+          // 边推：完整累积内容
+          reply.raw.write(`data: ${JSON.stringify({ id: messageId, role: "assistant", content: fullContent })}\n\n`);
+        }
+      } catch (err) {
+        console.error("AI 流式请求失败:", err);
+        reply.raw.write(`data: ${JSON.stringify({ error: true, content: "抱歉，服务暂时不可用。" })}\n\n`);
+      }
 
-  // 向指定会话发送消息（流式）
-  server.post('/:id/messages', {
-    schema: {
-      body: {
-        type: "object",
-        required: ["content"],
-        properties: {
-          content: { type: "string" },
-        },
-      },
-    },
-  }, addMessage);
-
+      // 4. 流结束，推送 done 信号
+      reply.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      reply.raw.end();
+    }
+  );
 }
