@@ -23,7 +23,6 @@ jobs:
           script: |
             export PATH="/www/server/nodejs/v14.17.6/lib/node_modules/pm2/bin:/www/server/nodejs/v14.17.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
             cd /www/wwwroot/copilot-mini
-            git pull origin main || git fetch origin main && git reset --hard origin/main
-            npm ci
+            git pull origin main
             npx tsc
-            pm2 restart copilot-mini || pm2 start dist/main.js --name copilot-mini
+            pm2 restart copilot-mini
