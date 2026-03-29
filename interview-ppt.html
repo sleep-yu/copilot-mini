@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>copilot-mini 面试训练 PPT</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .slide-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slide {
+    display: none;
+    width: 96vw;
+    height: 92vh;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 40px 60px;
+    overflow-y: auto;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    position: relative;
+  }
+  .slide.active { display: flex; flex-direction: column; }
+
+  .slide-number {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  .slide-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e8e8f0;
+  }
+
+  .nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #fff;
+    border-top: 1px solid #e8e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 100;
+  }
+
+  .nav-btn {
+    background: #fff;
+    color: #1a1a2e;
+    border: 1px solid #d0d4e0;
+    padding: 8px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: #f0f4ff; border-color: #4a90e2; color: #4a90e2; }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .page-indicator {
+    font-size: 14px;
+    color: #888;
+  }
+
+  .tag {
+    display: inline-block;
+    background: #eef3ff;
+    color: #4a90e2;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 6px;
+  }
+
+  .tag-green { background: #e8f8ee; color: #27ae60; }
+  .tag-yellow { background: #fff8e1; color: #d4a017; }
+  .tag-red { background: #fff0f0; color: #e25050; }
+  .tag-purple { background: #f5f0ff; color: #8e44ad; }
+
+  .block {
+    background: #f8f9fc;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    border-left: 3px solid #4a90e2;
+  }
+
+  .block h3 {
+    font-size: 15px;
+    color: #1a1a2e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .block p, .block li {
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: #444;
+  }
+
+  .block ul { padding-left: 18px; }
+  .block li { margin-bottom: 3px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  .interview-tip {
+    background: #fffbf0;
+    border: 1px solid #ffe580;
+    color: #6b5500;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .interview-tip strong { color: #c07800; }
+  .interview-tip::before { content: '💬 面试提示：'; font-weight: 700; }
+
+  .qa-card {
+    background: #fff;
+    border: 1px solid #e8e8f0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+  .qa-card .q {
+    color: #1a1a2e;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .qa-card .why {
+    color: #999;
+    font-size: 11.5px;
+    margin-bottom: 5px;
+  }
+  .qa-card .a {
+    color: #555;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  .code-block {
+    background: #f7f8fa;
+    border: 1px solid #e8e8ee;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    color: #2d6a4f;
+    overflow-x: auto;
+    margin: 6px 0;
+  }
+
+  .diagram {
+    background: #f8f9fc;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    margin: 10px 0;
+  }
+
+  .cover-page {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+  }
+  .cover-page h1 { font-size: 46px; color: #1a1a2e; margin-bottom: 18px; font-weight: 800; }
+  .cover-page .subtitle { font-size: 19px; color: #666; margin-bottom: 36px; }
+  .cover-page .meta { font-size: 13px; color: #aaa; margin-top: 36px; }
+  .cover-page .tags { margin-top: 18px; }
+
+  .speech-box {
+    background: #f8f9fc;
+    border: 1px solid #e0e4f0;
+    border-radius: 8px;
+    padding: 18px;
+    margin: 8px 0;
+  }
+  .speech-box .speaker {
+    font-size: 11.5px;
+    color: #4a90e2;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .speech-box .text { font-size: 13px; color: #444; line-height: 1.8; }
+
+  .scroll-area { flex: 1; overflow-y: auto; padding-right: 4px; }
+  .scroll-area::-webkit-scrollbar { width: 4px; }
+  .scroll-area::-webkit-scrollbar-thumb { background: #d0d4e0; border-radius: 2px; }
+
+  .highlight { color: #4a90e2; font-weight: 600; }
+  .text-sm { font-size: 12.5px; }
+  .text-xs { font-size: 11px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 14px; }
+  .mb-8 { margin-bottom: 8px; }
+  .flex-1 { flex: 1; }
+
+  .arrow-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 14px 0;
+  }
+  .arrow-box {
+    background: #fff;
+    border: 1.5px solid #4a90e244;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .arrow-box .name { color: #1a1a2e; font-size: 12px; font-weight: 600; }
+  .arrow-box .desc { color: #999; font-size: 10px; margin-top: 3px; }
+  .arrow { color: #4a90e2; font-size: 18px; }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .flow-step .num {
+    width: 22px;
+    height: 22px;
+    background: #eef3ff;
+    color: #4a90e2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .flow-step .content { font-size: 12.5px; color: #444; line-height: 1.7; }
+
+  .resume-block {
+    background: #f8f9fc;
+    border: 1px solid #e0e4f0;
+    border-radius: 8px;
+    padding: 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: #333;
+  }
+  .resume-block .title { color: #1a1a2e; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .resume-block .subtitle { color: #888; font-size: 11.5px; margin-bottom: 10px; }
+
+  strong { color: #1a1a2e; }
+  code { background: #f0f2f5; padding: 1px 5px; border-radius: 3px; font-size: 11.5px; color: #c0392b; }
+</style>
+</head>
+<body>
+
+<div class="slide-container">
+  <!-- 第1页：封面 -->
+  <div class="slide cover-page active" id="slide-1">
+    <h1>🤖 copilot-mini</h1>
+    <div class="subtitle">AI 对话助手 · 面试训练型项目复盘</div>
+    <div class="tags">
+      <span class="tag">前端：React + TypeScript</span>
+      <span class="tag">后端：Node.js + Fastify + TypeScript</span>
+      <span class="tag tag-green">数据库：MongoDB + Mongoose</span>
+      <span class="tag tag-purple">AI：智谱 GLM-4.7</span>
+    </div>
+    <div class="meta">部署地址：https://www.sleepyu.site &nbsp;|&nbsp; 后端端口：62345</div>
+  </div>
+
+  <!-- 第2页：项目背景与价值 -->
+  <div class="slide" id="slide-2">
+    <div class="slide-title">第2页 · 项目背景与价值</div>
+    <div class="scroll-area">
+      <div class="grid-2">
+        <div class="block">
+          <h3>🎯 解决什么问题</h3>
+          <ul>
+            <li>为个人/小团队提供<strong>私有化部署</strong>的 AI 对话服务</li>
+            <li>基于<strong>智谱 GLM-4.7</strong>大模型，替代高昂的 OpenAI API 成本</li>
+            <li>支持<strong>多会话管理</strong>（创建、列表、删除、清空消息）</li>
+            <li>提供标准 <strong>Webhook Hook</strong> 接口，便于与现有系统集成</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>🏠 适合什么场景</h3>
+          <ul>
+            <li>企业内部 AI 助手（私有数据不外流）</li>
+            <li>个人知识库对话机器人</li>
+            <li>接入企微/飞书等 IM 平台的 AI 服务端</li>
+            <li>作为 copilot 类产品的轻量级后端核心</li>
+          </ul>
+        </div>
+      </div>
+      <div class="block mt-16">
+        <h3>👤 用户如何使用</h3>
+        <p>用户打开前端页面 → 注册/登录（JWT鉴权）→ 创建会话 → 发送消息 → 后端调 AI → 返回对话内容 → 前端渲染。整个链路：<strong>用户 → 前端 → 后端 → 智谱 AI → 后端 → 前端</strong>。</p>
+      </div>
+      <div class="interview-tip">
+        面试时可强调：这是<strong>前后端分离</strong>的完整全栈项目，RESTful API + JWT 无状态鉴权，<strong>水平扩展容易</strong>（前端静态部署，后端无状态服务），成本可控（用的智谱 API 比 OpenAI 便宜很多）。
+      </div>
+    </div>
+    <div class="slide-number">2 / 18</div>
+  </div>
+
+  <!-- 第3页：项目总架构 -->
+  <div class="slide" id="slide-3">
+    <div class="slide-title">第3页 · 项目总架构</div>
+    <div class="scroll-area">
+      <div class="diagram">
+        <div class="arrow-diagram">
+          <div class="arrow-box"><div class="name">用户浏览器</div><div class="desc">React 前端</div></div>
+          <div class="arrow">→</div>
+          <div class="arrow-box"><div class="name">Nginx</div><div class="desc">反向代理 + SSL</div></div>
+          <div class="arrow">→</div>
+          <div class="arrow-box"><div class="name">Fastify 后端</div><div class="desc">:62345 /api</div></div>
+          <div class="arrow">→</div>
+          <div class="arrow-box"><div class="name">智谱 AI</div><div class="desc">GLM-4.7</div></div>
+        </div>
+        <div class="arrow-diagram" style="margin-top:6px;">
+          <div class="arrow-box"><div class="name">MongoDB</div><div class="desc">持久化会话</div></div>
+          <div class="arrow">←</div>
+          <div class="arrow-box"><div class="name">Fastify</div><div class="desc">读写数据</div></div>
+        </div>
+      </div>
+      <div class="grid-3 mt-16">
+        <div class="block">
+          <h3>前端职责</h3>
+          <ul>
+            <li>用户交互 + 状态管理</li>
+            <li>会话列表 / 聊天界面</li>
+            <li>JWT Token 存储与发送</li>
+            <li>Markdown 内容渲染</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>后端职责</h3>
+          <ul>
+            <li>RESTful API（路由/服务/模型分层）</li>
+            <li>JWT 鉴权中间件</li>
+            <li>AI 服务调用（智谱 API）</li>
+            <li>MongoDB 数据持久化</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>协作约定</h3>
+          <ul>
+            <li>接口路径统一加 <code>/api</code> 前缀</li>
+            <li>Authorization: Bearer Token</li>
+            <li>JSON 格式请求/响应</li>
+            <li>错误码统一封装</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interview-tip">
+        架构优点：<strong>分层清晰</strong>（路由→服务→模型），<strong>无状态后端</strong>（JWT），<strong>前后端解耦</strong>。可顺着说 Fastify 比 Express 更快，内置 validation schema。
+      </div>
+    </div>
+    <div class="slide-number">3 / 18</div>
+  </div>
+
+  <!-- 第4页：前端核心功能总览 -->
+  <div class="slide" id="slide-4">
+    <div class="slide-title">第4页 · 前端核心功能总览</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>📱 前端承担职责</h3>
+        <p>基于 <strong>React + TypeScript</strong>（推测实现），核心做三件事：<strong>展示</strong>（对话列表、聊天界面）、<strong>交互</strong>（发消息、创建会话）、<strong>状态</strong>（登录态、当前会话、消息列表）。</p>
+      </div>
+      <div class="grid-2 mt-16">
+        <div class="block">
+          <h3>🗂 主要模块</h3>
+          <ul>
+            <li><strong>ChatPage</strong> — 聊天页面（核心）</li>
+            <li><strong>会话列表</strong> — 展示所有历史会话</li>
+            <li><strong>登录/注册页</strong> — JWT 获取入口</li>
+            <li><strong>接口层</strong> — API 统一封装</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>✨ 前端亮点</h3>
+          <ul>
+            <li>useCallback 避免 stale closure（之前修过的 bug）</li>
+            <li>错误处理 + loading 状态管理</li>
+            <li>Markdown 渲染（marked 库）</li>
+            <li>响应式布局</li>
+          </ul>
+        </div>
+      </div>
+      <div class="block mt-16">
+        <h3>👤 核心操作路径</h3>
+        <div class="flow-step"><div class="num">1</div><div class="content">打开页面 → 检查本地 Token → 有Token显示会话列表，无Token跳转登录</div></div>
+        <div class="flow-step"><div class="num">2</div><div class="content">点击会话 → 加载历史消息列表 → 展示在聊天区</div></div>
+        <div class="flow-step"><div class="num">3</div><div class="content">输入消息 → 点发送 → 调后端 API → 收到 AI 回复 → 追加到消息列表</div></div>
+        <div class="flow-step"><div class="num">4</div><div class="content">新建会话 → 调创建接口 → 跳转到新会话</div></div>
+      </div>
+      <div class="interview-tip">
+        <strong>追问预警：</strong>前端修过一个 stale closure bug（sendMessage 引用了过期的 state）。这说明对 <strong>React 闭包陷阱</strong> 有实战理解，面试时可以主动提。
+      </div>
+    </div>
+    <div class="slide-number">4 / 18</div>
+  </div>
+
+  <!-- 第5页：前端模块拆解 -->
+  <div class="slide" id="slide-5">
+    <div class="slide-title">第5页 · 前端模块拆解</div>
+    <div class="scroll-area">
+      <div class="grid-2">
+        <div class="block">
+          <h3>🧩 页面结构</h3>
+          <ul>
+            <li>ChatPage — 核心聊天页（消息列表 + 输入框）</li>
+            <li>会话列表侧边栏</li>
+            <li>登录页 / 注册页</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>⚙️ 技术细节（推测实现）</h3>
+          <ul>
+            <li><strong>路由</strong>：React Router（/login, /chat/:id）</li>
+            <li><strong>状态</strong>：React hooks（useState/useCallback）</li>
+            <li><strong>接口封装</strong>：fetch 统一封装，自动附加 Token</li>
+            <li><strong>Token</strong>：localStorage 存储</li>
+          </ul>
+        </div>
+      </div>
+      <div class="block mt-16">
+        <h3>🔐 权限控制</h3>
+        <p>前端不依赖 Cookie，而是<strong>显式携带 Token</strong>：每次请求在 HTTP 头部加 <code>Authorization: Bearer &lt;token&gt;</code>。后端 <code>authMiddleware</code> 统一拦截验证。</p>
+        <div class="code-block">// 前端请求封装（推测结构）
+fetch('/api/sessions', {
+  headers: {
+    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    'Content-Type': 'application/json'
+  }
+})</div>
+      </div>
+      <div class="interview-tip">
+        <strong>推荐回答关键词：</strong>"无状态鉴权"、"Token 存在 localStorage"、"请求拦截器统一注入 Token"。
+      </div>
+    </div>
+    <div class="slide-number">5 / 18</div>
+  </div>
+
+  <!-- 第6页：前端关键实现细节 -->
+  <div class="slide" id="slide-6">
+    <div class="slide-title">第6页 · 前端关键实现细节</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>🔧 之前修过的 Bug — stale closure</h3>
+        <div class="code-block">// ❌ 错误写法（修复前）
+const sendMessage = () => {
+  fetch('/api/sessions/123/messages', { ... })
+    .then(res => {
+      setMessages([...messages, res.data]) // 引用了旧 state
+    })
+}
+
+// ✅ 正确写法（修复后）
+const sendMessage = useCallback(() => {
+  setMessages(prev => [...prev, res.data]) // 函数式更新
+}, [])</div>
+        <p class="mt-8 text-sm">问题根因：<strong>React 闭包陷阱</strong> — 普通函数捕获的是渲染时的 state 快照，不是最新值。useCallback + 函数式 setState 解决。</p>
+      </div>
+      <div class="block mt-16">
+        <h3>🔧 loadOrCreateSession — 错误边界</h3>
+        <div class="code-block">// ✅ 修复后（catch 块要手动关 loading）
+const loadOrCreateSession = async () => {
+  try {
+    const session = await findOrCreateSession();
+    setCurrentSession(session);
+  } catch (err) {
+    setIsLoading(false); // 异常路径也要关 loading
+    toast.error('加载失败');
+    return;
+  }
+}</div>
+      </div>
+      <div class="block mt-16">
+        <h3>💡 前端可维护性设计</h3>
+        <ul>
+          <li>接口层统一封装（减少重复 fetch 代码）</li>
+          <li>loading / error 状态分离（UI 反馈完整）</li>
+          <li>Markdown 渲染（marked 库）— 兼容 AI 返回格式</li>
+        </ul>
+      </div>
+      <div class="interview-tip">
+        <strong>面试高频追问：</strong>"React 的 useCallback 什么时候用？" — 回答：<strong>作为回调传给子组件或异步函数时</strong>，避免闭包捕获旧值。
+      </div>
+    </div>
+    <div class="slide-number">6 / 18</div>
+  </div>
+
+  <!-- 第7页：后端核心功能总览 -->
+  <div class="slide" id="slide-7">
+    <div class="slide-title">第7页 · 后端核心功能总览</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>⚙️ 后端承担的职责</h3>
+        <p>基于 <strong>Fastify + TypeScript</strong>，核心：<strong>提供 API</strong>（会话 CRUD + AI 对话）、<strong>鉴权</strong>（JWT）、<strong>AI 服务集成</strong>（智谱 GLM-4.7）、<strong>数据持久化</strong>（MongoDB）。</p>
+      </div>
+      <div class="grid-3 mt-16">
+        <div class="block">
+          <h3>📦 会话管理</h3>
+          <ul>
+            <li>GET /api/sessions — 列表（分页）</li>
+            <li>POST /api/sessions — 创建</li>
+            <li>GET /api/sessions/:id — 详情</li>
+            <li>PUT /api/sessions/:id — 更新标题</li>
+            <li>DELETE /api/sessions/:id — 删除</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>💬 消息处理</h3>
+          <ul>
+            <li>POST /api/sessions/:id/messages — 发消息</li>
+            <li>自动调 AI 生成回复</li>
+            <li>DELETE /api/sessions/:id/messages — 清空</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>🤖 AI 服务</h3>
+          <ul>
+            <li>POST /api/copilot/hook — Webhook 入口</li>
+            <li>调智谱 GLM-4.7 API</li>
+            <li>统一响应格式封装</li>
+          </ul>
+        </div>
+      </div>
+      <div class="block mt-16">
+        <h3>🏆 后端核心价值</h3>
+        <p>分层架构（路由→服务→模型）、<strong>Fastify schema validation</strong>（自动校验请求参数）、<strong>统一错误处理</strong>（errorHandler hook）、<strong>IIFE 模式加载密钥</strong>（JWT_SECRET 未配置时主动抛错）。</p>
+      </div>
+    </div>
+    <div class="slide-number">7 / 18</div>
+  </div>
+
+  <!-- 第8页：后端模块拆解 -->
+  <div class="slide" id="slide-8">
+    <div class="slide-title">第8页 · 后端模块拆解</div>
+    <div class="scroll-area">
+      <div class="grid-2">
+        <div class="block">
+          <h3>🗂️ 目录结构</h3>
+          <div class="code-block" style="font-size:11px; line-height:1.6;">
+src/
+├── routes/      # 路由层（Fastify 路由定义）
+├── service/     # 业务层（核心逻辑）
+├── model/       # 数据模型（MongoDB Mongoose）
+├── middleware/  # 中间件（JWT 鉴权）
+├── common/
+│   ├── hooks/  # 全局钩子（错误处理）
+│   ├── error/  # 自定义错误类
+│   ├── logger/ # 日志（bunyan）
+│   └── enums/  # 错误码/枚举
+└── clients/    # 外部服务客户端（AI）
+          </div>
+        </div>
+        <div>
+          <div class="block">
+            <h3>🗄️ 数据库设计</h3>
+            <div class="code-block" style="font-size:10.5px;">
+Session {
+  _id: ObjectId,
+  userId: ObjectId,    # 用户ID
+  title: String,        # 会话标题
+  messages: [{
+    id: String,        # msg-开头
+    role: "user"|"assistant",
+    content: String,
+    timestamp: Number
+  }],
+  createdAt/updatedAt: Date
+}
+
+User {
+  _id: ObjectId,
+  email: String (unique),
+  password: String (bcrypt),
+  nickname/avatar: String,
+  createdAt/updatedAt: Date
+}
+            </div>
+          </div>
+          <div class="block mt-16">
+            <h3>🔑 鉴权机制</h3>
+            <ul>
+              <li>bcrypt 密码哈希（10 rounds）</li>
+              <li>JWT 签发（7天过期）</li>
+              <li>所有 /api/* 路由加 authMiddleware</li>
+              <li>JWT_SECRET 用 IIFE 模式，未配置 throw</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="block mt-16">
+        <h3>🛡️ 异常处理</h3>
+        <p>全局 <code>errorHandler</code> hook：验证错误→HTTP 400，自定义 HttpError→对应状态码，其他→500。响应格式统一：<code>{ code, message, data }</code>。</p>
+      </div>
+      <div class="interview-tip">
+        <strong>配置管理：</strong>用了 <code>config</code> 库（读 default.json）+ <code>dotenv</code>（.env 覆盖）。踩过坑：<strong>config 在 import 阶段读取</strong>，AI_API_KEY 要在函数运行时读取，不能用模块级常量。
+      </div>
+    </div>
+    <div class="slide-number">8 / 18</div>
+  </div>
+
+  <!-- 第9页：后端关键实现细节 -->
+  <div class="slide" id="slide-9">
+    <div class="slide-title">第9页 · 后端关键实现细节</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>🔑 JWT_SECRET — IIFE 模式</h3>
+        <div class="code-block">// ✅ 正确写法：未配置时主动抛错，不 fallback
+const JWT_SECRET = (() => {
+  const secret = getEnvConfig("JWT_SECRET") as string;
+  if (!secret) {
+    throw new Error("JWT_SECRET not configured"); // 启动时就挂
+  }
+  return secret;
+})();</div>
+        <p class="mt-8 text-sm">❌ 之前错误写法：用硬编码默认值（如 <code>"secret"</code>），生产环境等于没加密。</p>
+      </div>
+      <div class="block mt-16">
+        <h3>🔑 响应状态码 — fail() 显式设置</h3>
+        <div class="code-block">// ✅ 正确：在 .send() 之前设置 reply.statusCode
+export const fail = (reply, code, message, statusCode) => {
+  reply.statusCode = statusCode;  // 在 send 之前！
+  return reply.send({ code, message, data: null });
+};</div>
+        <p class="mt-8 text-sm">踩坑：Fastify 的 <code>preSerialization</code> 钩子会在 .send() 之后覆盖 statusCode，所以要<strong>显式在 send 之前设置</strong>。</p>
+      </div>
+      <div class="block mt-16">
+        <h3>🤖 AI 调用 — 运行时读取密钥</h3>
+        <div class="code-block">// ❌ 模块级常量：import 时 dotenv 还没执行，读到的是 placeholder
+const AI_API_KEY = config.get('AI_API_KEY');
+
+// ✅ 函数内运行时读取
+async ask({ userId, message }) {
+  const AI_API_KEY = process.env.AI_API_KEY || config.get(...); // 运行时
+}</div>
+      </div>
+      <div class="block mt-16">
+        <h3>📊 addMessage — AI 对话流程</h3>
+        <div class="flow-step"><div class="num">1</div><div class="content">接收用户消息，写入 messages 数组</div></div>
+        <div class="flow-step"><div class="num">2</div><div class="content">如果 role=user，调 aiService.ask() 请求智谱</div></div>
+        <div class="flow-step"><div class="num">3</div><div class="content">AI 回复写入 messages，updatedAt 更新</div></div>
+        <div class="flow-step"><div class="num">4</div><div class="content">返回 { user: message, assistant: aiMessage }</div></div>
+      </div>
+      <div class="interview-tip">
+        <strong>面试追问：</strong>"为什么要用 IIFE 包 JWT_SECRET？" — 回答：<strong>确保启动时校验</strong>而不是等到第一个请求来才报错，fail-fast 原则。
+      </div>
+    </div>
+    <div class="slide-number">9 / 18</div>
+  </div>
+
+  <!-- 第10页：前后端联动 -->
+  <div class="slide" id="slide-10">
+    <div class="slide-title">第10页 · 前后端联动流程</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>💬 以「发送一条消息」为例</h3>
+        <div class="arrow-diagram">
+          <div class="arrow-box"><div class="name">用户输入</div><div class="desc">点击发送</div></div>
+          <div class="arrow">→</div>
+          <div class="arrow-box"><div class="name">前端</div><div class="desc">POST /api/sessions/:id/messages</div></div>
+          <div class="arrow">→</div>
+          <div class="arrow-box"><div class="name">Fastify</div><div class="desc">authMiddleware 验 JWT</div></div>
+          <div class="arrow">→</div>
+          <div class="arrow-box"><div class="name">sessionService</div><div class="desc">addMessage 写库</div></div>
+        </div>
+        <div class="arrow-diagram" style="margin-top:6px;">
+          <div class="arrow-box"><div class="name">智谱 GLM</div><div class="desc">生成回复</div></div>
+          <div class="arrow">←</div>
+          <div class="arrow-box"><div class="name">aiService</div><div class="desc">ask() 调 API</div></div>
+          <div class="arrow">←</div>
+          <div class="arrow-box"><div class="name">Mongoose</div><div class="desc">更新 document</div></div>
+          <div class="arrow">←</div>
+          <div class="arrow-box"><div class="name">addMessage</div><div class="desc">role=user 触发 AI</div></div>
+        </div>
+      </div>
+      <div class="grid-2 mt-16">
+        <div class="block">
+          <h3>📤 前端请求</h3>
+          <div class="code-block" style="font-size:11px;">
+POST /api/sessions/abc123/messages
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{ "role": "user", "content": "你好" }</div>
+        </div>
+        <div class="block">
+          <h3>📥 后端响应</h3>
+          <div class="code-block" style="font-size:11px;">
+{
+  "code": 0, "message": "",
+  "data": {
+    "user": { "role": "user", "content": "你好", ... },
+    "assistant": { "role": "assistant", "content": "你好！有什么可以帮你的？", ... }
+  }
+}</div>
+        </div>
+      </div>
+      <div class="interview-tip">
+        注意：用户发一条消息，<strong>后端返回两条消息</strong>（user + assistant）。AI 回复是在 addMessage 内部同步生成的，不是前端轮询。
+      </div>
+    </div>
+    <div class="slide-number">10 / 18</div>
+  </div>
+
+  <!-- 第11页：项目亮点与难点 -->
+  <div class="slide" id="slide-11">
+    <div class="slide-title">第11页 · 项目亮点与技术难点</div>
+    <div class="scroll-area">
+      <div class="grid-2">
+        <div class="block">
+          <h3>✨ 主要亮点</h3>
+          <ul>
+            <li><strong>分层架构</strong>：路由/服务/模型三层，职责清晰</li>
+            <li><strong>Fastify 性能</strong>：基于 Promise，最大化利用 async/await</li>
+            <li><strong>Schema Validation</strong>：请求参数自动校验（内置 schema）</li>
+            <li><strong>JWT 无状态鉴权</strong>：水平扩展简单</li>
+            <li><strong>AI 服务集成</strong>：统一封装，支持多 AI 后端切换</li>
+            <li><strong>错误处理体系</strong>：全局 errorHandler + 自定义 HttpError</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>🔒 安全设计</h3>
+          <ul>
+            <li>bcrypt 密码哈希（防彩虹表）</li>
+            <li>JWT 7天过期 + IIFE 密钥校验</li>
+            <li>CORS 配置（origin: true）</li>
+            <li>用户隔离：每个 API 校验 userId（不能看别人的会话）</li>
+            <li>Mongoose 参数化查询防注入</li>
+          </ul>
+        </div>
+      </div>
+      <div class="block mt-16">
+        <h3>🔧 技术难点及解决</h3>
+        <div class="flow-step"><div class="num">1</div><div class="content"><strong>闭包捕获旧值</strong> — 修复：useCallback + 函数式 setState。React render 是函数，每次渲染快照不同，异步回调拿到的是当次渲染的 state。</div></div>
+        <div class="flow-step"><div class="num">2</div><div class="content"><strong>Fastify 状态码被覆盖</strong> — 修复：reply.statusCode 在 .send() 之前设置。preSerialization 钩子在 send 之后执行，会改写 statusCode。</div></div>
+        <div class="flow-step"><div class="num">3</div><div class="content"><strong>dotenv 加载时机</strong> — 修复：AI 密钥读取从模块级常量移到函数内部（运行时）。import 阶段 dotenv 未执行，process.env 还是空对象。</div></div>
+        <div class="flow-step"><div class="num">4</div><div class="content"><strong>MongoDB 用户权限</strong> — 修复：删除 test 库，用户建在 copilot 库。authSource 必须指向用户实际所在的库。</div></div>
+      </div>
+    </div>
+    <div class="slide-number">11 / 18</div>
+  </div>
+
+  <!-- 第12页：前端面试题 -->
+  <div class="slide" id="slide-12">
+    <div class="slide-title">第12页 · 前端面试题</div>
+    <div class="scroll-area">
+      <div class="qa-card">
+        <div class="q">Q: React 的 useCallback 什么时候用？</div>
+        <div class="why">考察是否真正理解闭包陷阱和性能优化边界</div>
+        <div class="a">答：传给子组件的回调、或在异步操作中使用的回调函数，用 useCallback 包裹。本项目 sendMessage 传给 fetch，异步回调里用了 messages state，不包的话会捕获首次渲染的旧值。</div>
+      </div>
+      <div class="qa-card">
+        <div class="q">Q: React 的 setState 是同步还是异步？</div>
+        <div class="why">考察对 React 更新机制的理解深度</div>
+        <div class="a">答：React 18 后 automatic batching 批量异步更新。但关键的是：<strong>在 setTimeout / fetch 回调里调用 setState，会在队列中等待下一次渲染时统一更新</strong>。直接读取 state 拿不到最新值——这就是 stale closure 的根因。</div>
+      </div>
+      <div class="qa-card">
+        <div class="q">Q: 如何避免 Token 泄露？</div>
+        <div class="why">考察安全意识</div>
+        <div class="a">答：1) Token 存在 httpOnly Cookie 更安全（本项目存 localStorage，是权衡）；2) HTTPS 传输；3) JWT 过期时间控制（7天）；4) 前端统一加 Authorization 头。</div>
+      </div>
+      <div class="qa-card">
+        <div class="q">Q: fetch 错误如何处理？</div>
+        <div class="why">考察错误边界意识</div>
+        <div class="a">答：本项目 loadOrCreateSession 的 catch 里关了 loading + toast + return。错误处理原则：<strong>loading 要在所有路径（成功/失败/异常）都关闭</strong>，否则 UI 会一直卡着。</div>
+      </div>
+      <div class="interview-tip">
+        <strong>前端主动加分项：</strong>主动说"还处理了 Markdown 渲染（marked 库），AI 返回的内容可能包含代码块、列表等格式"，说明考虑了<strong>AI 内容安全渲染</strong>（XSS 防护也可以提）。
+      </div>
+    </div>
+    <div class="slide-number">12 / 18</div>
+  </div>
+
+  <!-- 第13页：后端面试题 -->
+  <div class="slide" id="slide-13">
+    <div class="slide-title">第13页 · 后端面试题</div>
+    <div class="scroll-area">
+      <div class="qa-card">
+        <div class="q">Q: Fastify vs Express 区别？为什么选 Fastify？</div>
+        <div class="why">考察技术选型能力和框架理解</div>
+        <div class="a">答：1) Fastify 基于 Promise/async，2) 内置 schema validation（不用装 express-validator），3) 更快（基准测试 2x+），4) 插件生态好。本项目参考 cassec-copilot-server 的选择。</div>
+      </div>
+      <div class="qa-card">
+        <div class="q">Q: JWT 的原理？为什么适合无状态服务？</div>
+        <div class="why">考察鉴权机制理解</div>
+        <div class="a">答：JWT = Header.Payload.Signature 三部分，服务端只需要<strong>用密钥验签</strong>，不需要存 session。任意节点都能独立完成验证，<strong>方便水平扩展</strong>。本项目每个请求带 Bearer Token，authMiddleware 统一拦截。</div>
+      </div>
+      <div class="qa-card">
+        <div class="q">Q: MongoDB 和 MySQL 怎么选？为什么要用 MongoDB？</div>
+        <div class="why">考察数据库选型能力</div>
+        <div class="a">答：选 MongoDB 的原因：1) messages 是嵌套数组结构，用 Mongoose 的 $push 更新比关联表简单；2) Session 无固定 schema，可能扩展字段；3) Mongoose 文档模型和 TypeScript class 对应，开发体验好。</div>
+      </div>
+      <div class="qa-card">
+        <div class="q">Q: config 库在 import 阶段读取的问题是什么？</div>
+        <div class="why">考察对 Node.js 模块系统和配置加载顺序的理解</div>
+        <div class="a">答：Node.js import 阶段比 require 更早执行，dotenv/config 在 import 之前加载不到 .env，process.env 是空的。解决方案：配置读取放到函数运行时（懒加载）。本项目 AI_API_KEY 用了这个方案。</div>
+      </div>
+      <div class="qa-card">
+        <div class="q">Q: 什么情况下 HTTP 状态码会被覆盖？</div>
+        <div class="why">考察 Fastify 生命周期理解</div>
+        <div class="a">答：Fastify 有 preSerialization 钩子在 .send() 后执行，会改写 statusCode。必须在 .send() <strong>之前</strong> 设置 reply.statusCode。本项目 fail() 工具函数显式在 send 前设置。</div>
+      </div>
+      <div class="interview-tip">
+        <strong>后端主动加分项：</strong>可以说"全局错误处理 hook 是统一的，所有未捕获异常都会走 errorHandler，不会把栈信息泄露给客户端"。体现了<strong>安全编码意识</strong>。
+      </div>
+    </div>
+    <div class="slide-number">13 / 18</div>
+  </div>
+
+  <!-- 第14页：简历写法 -->
+  <div class="slide" id="slide-14">
+    <div class="slide-title">第14页 · 如何写进简历</div>
+    <div class="scroll-area">
+      <div class="resume-block mb-8">
+        <div class="title">copilot-mini · AI 对话助手</div>
+        <div class="subtitle">全栈项目 / React + Fastify + MongoDB + 智谱 GLM-4.7</div>
+        <br>
+        <strong>项目简介：</strong><br>
+        基于智谱 GLM-4.7 大模型开发的私有化 AI 对话助手，支持多会话管理、Markdown 渲染、JWT 无状态鉴权，采用前后端分离架构，后端基于 Fastify 提供 RESTful API，数据持久化于 MongoDB。
+        <br><br>
+        <strong>技术栈：</strong>React / TypeScript / Fastify / MongoDB (Mongoose) / JWT / 智谱 AI API
+        <br><br>
+        <strong>核心职责：</strong><br>
+        · 独立完成前后端架构设计与实现<br>
+        · 基于 Fastify 构建路由层 / 服务层 / 模型层分层架构<br>
+        · 设计 MongoDB 数据模型（Session 嵌套消息数组）<br>
+        · 实现 JWT 无状态鉴权中间件<br>
+        · 集成智谱 GLM-4.7 API，封装统一 AI 服务层<br>
+        · 修复 stale closure / 响应状态码覆盖 / dotenv 加载时机等技术难点
+        <br><br>
+        <strong>项目亮点：</strong><br>
+        · 分层架构：路由/服务/模型分离，职责清晰，便于扩展<br>
+        · 安全设计：bcrypt 密码哈希 + JWT 7天过期 + 用户数据隔离<br>
+        · 工程能力：IIFE 模式密钥校验（fail-fast）+ 全局错误处理 hook<br>
+        · 性能优化：Fastify schema validation 减少冗余参数校验代码<br>
+        · 私有化部署：支持企业内部使用，数据不外流
+      </div>
+      <div class="interview-tip">
+        注意：简历上不要写"AI 对话助手平台"这种大词，<strong>要具体</strong>："私有化部署的 AI 对话助手"。亮点不超过 5 条，挑最能体现工程能力的写。
+      </div>
+    </div>
+    <div class="slide-number">14 / 18</div>
+  </div>
+
+  <!-- 第15页：必须掌握的核心知识点 -->
+  <div class="slide" id="slide-15">
+    <div class="slide-title">第15页 · 必须掌握的核心知识点</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>P0 — 必须完全理解（面试必问）</h3>
+        <ul>
+          <li>JWT 鉴权原理：签发 / 验证 / 过期 / 请求携带方式</li>
+          <li>Fastify 路由定义：get/post/put/delete + schema validation</li>
+          <li>sessionService.addMessage 流程：写用户消息 → 触发 AI → 写 AI 消息</li>
+          <li>Mongoose 数据模型：Session 嵌套 messages 数组，User 模型</li>
+          <li>HTTP 状态码：200/201/400/401/404/500 每种什么时候用</li>
+          <li>JWT_SECRET 为什么用 IIFE + 未配置 throw</li>
+        </ul>
+      </div>
+      <div class="block mt-16">
+        <h3>P1 — 应该理解（追问会涉及）</h3>
+        <ul>
+          <li>bcrypt 原理（单向哈希，不可逆）</li>
+          <li>MongoDB 的 authSource 机制（用户在哪认证库就在哪）</li>
+          <li>Fastify preSerialization 会覆盖 statusCode</li>
+          <li>dotenv / config 加载时机（import vs runtime）</li>
+          <li>为什么选 MongoDB 而非 MySQL（嵌套数组、无固定 schema）</li>
+        </ul>
+      </div>
+      <div class="block mt-16">
+        <h3>P2 — 眼熟即可（能说出来思路）</h3>
+        <ul>
+          <li>CORS 原理（Access-Control-Allow-Origin）</li>
+          <li>Fastify 插件机制（server.register）</li>
+          <li>Mongoose 的 $push 更新嵌套数组</li>
+          <li>前端 stale closure 根本原因（React render 是函数快照）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-number">15 / 18</div>
+  </div>
+
+  <!-- 第16页：代码阅读路径 -->
+  <div class="slide" id="slide-16">
+    <div class="slide-title">第16页 · 代码阅读路径建议</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>📖 后端代码学习顺序（从入门到深入）</h3>
+        <div class="flow-step"><div class="num">1</div><div class="content"><strong>先看 main.ts</strong> — 了解整个后端怎么启动的：加载配置 → 启动 Fastify → 注册 CORS → 绑定路由 → 连接 MongoDB → 监听端口</div></div>
+        <div class="flow-step"><div class="num">2</div><div class="content"><strong>再看 routes/session.ts</strong> — 看有哪些 API 端点，路径是 /api/sessions，定义了 CRUD + 消息操作</div></div>
+        <div class="flow-step"><div class="num">3</div><div class="content"><strong>然后看 middleware/auth.ts</strong> — 理解 JWT 怎么验、payload 什么样、错误怎么返回</div></div>
+        <div class="flow-step"><div class="num">4</div><div class="content"><strong>接着看 service/session.service.ts</strong> — 核心业务逻辑在这里，addMessage 里 AI 怎么被触发</div></div>
+        <div class="flow-step"><div class="num">5</div><div class="content"><strong>再看 service/ai.service.ts</strong> — 怎么调智谱 API，config 读取为什么在函数里</div></div>
+        <div class="flow-step"><div class="num">6</div><div class="content"><strong>最后看 common/hooks/error.ts</strong> — 全局错误处理怎么统一封装</div></div>
+      </div>
+      <div class="block mt-16">
+        <h3>📖 前端代码学习顺序（推测）</h3>
+        <div class="flow-step"><div class="num">1</div><div class="content"><strong>ChatPage.tsx</strong> — 核心聊天页面，了解消息列表怎么渲染、输入框怎么发消息</div></div>
+        <div class="flow-step"><div class="num">2</div><div class="content"><strong>接口层封装</strong> — 统一加 Token、处理响应格式</div></div>
+        <div class="flow-step"><div class="num">3</div><div class="content"><strong>状态管理</strong> — useState/useCallback 的使用方式，loading/error 状态处理</div></div>
+      </div>
+    </div>
+    <div class="slide-number">16 / 18</div>
+  </div>
+
+  <!-- 第17页：可优化方向 -->
+  <div class="slide" id="slide-17">
+    <div class="slide-title">第17页 · 可优化方向</div>
+    <div class="scroll-area">
+      <div class="grid-2">
+        <div class="block">
+          <h3>🏗️ 架构优化</h3>
+          <ul>
+            <li><strong>AI 流式响应</strong>：目前等 AI 完全生成再返回，可改为 SSE 流式输出，用户体验更好</li>
+            <li><strong>消息队列解耦</strong>：AI 调用异步化，addMessage 写库后发 MQ，后台 worker 调 AI，避免阻塞主请求</li>
+            <li><strong>Redis 会话缓存</strong>：热数据放 Redis，减少 MongoDB 压力</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>⚡ 性能优化</h3>
+          <ul>
+            <li><strong>数据库索引</strong>：给 (userId, updatedAt) 加复合索引，优化会话列表查询</li>
+            <li><strong>分页优化</strong>：当前用 skip/limit，大页数时慢，可改用游标分页（lastId）</li>
+            <li><strong>连接池</strong>：MongoDB 连接池大小根据并发量调优</li>
+          </ul>
+        </div>
+      </div>
+      <div class="grid-2 mt-16">
+        <div class="block">
+          <h3>🔒 安全加固</h3>
+          <ul>
+            <li><strong>敏感操作限流</strong>：登录/发消息加频率限制，防滥用</li>
+            <li><strong>XSS 防护</strong>：前端对 AI 返回的 HTML/Markdown 做消毒</li>
+            <li><strong>Token 刷新机制</strong>：access token 短期 + refresh token 长期</li>
+            <li><strong>操作日志审计</strong>：谁在什么时间操作了什么</li>
+          </ul>
+        </div>
+        <div class="block">
+          <h3>🧩 可维护性</h3>
+          <ul>
+            <li><strong>接口版本管理</strong>：/api/v1/sessions，兼容后续升级</li>
+            <li><strong>OpenAPI 文档</strong>：加 Swagger 自动生成接口文档</li>
+            <li><strong>单元测试覆盖率</strong>：当前有测试，可扩覆盖率</li>
+            <li><strong>环境配置分离</strong>：dev/staging/prod 三套 .env</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interview-tip">
+        <strong>面试主动加分话术：</strong>"如果时间允许，我会在 addMessage 里引入消息队列，把 AI 调用解耦出来，这样 AI 响应慢不会阻塞主请求。这也是目前业界处理 LLM 调用的常见模式。"
+      </div>
+    </div>
+    <div class="slide-number">17 / 18</div>
+  </div>
+
+  <!-- 第18页：总结页 -->
+  <div class="slide" id="slide-18">
+    <div class="slide-title">第18页 · 总结页</div>
+    <div class="scroll-area">
+      <div class="block">
+        <h3>🎯 你最终必须能讲清楚</h3>
+        <ul>
+          <li>这个系统是干什么的（一句话：私有化 AI 对话助手）</li>
+          <li>前端做什么、后端做什么、数据怎么流</li>
+          <li>JWT 怎么工作、用户怎么鉴权、数据怎么隔离</li>
+          <li>一条消息从发起到收到回复的完整链路</li>
+          <li>你遇到的三个最难的问题及解决思路</li>
+        </ul>
+      </div>
+      <div class="speech-box mt-16">
+        <div class="speaker">🎤 3分钟项目介绍稿（可直接背诵）</div>
+        <div class="text">
+          "这是一个我叫 copilot-mini 的全栈项目，前端用 React + TypeScript，后端用 Node.js + Fastify，数据库用 MongoDB，AI 能力接的智谱 GLM-4.7。<br><br>
+          用户登录之后可以创建多个会话，每个会话可以发多条消息，后端在收到用户消息后会调 AI 生成回复。<br><br>
+          技术上我重点做了三件事：第一是分层架构，路由/服务/模型分离；第二是 JWT 无状态鉴权，用户数据严格隔离；第三是解决了一些实际问题，比如 Fastify 状态码被覆盖、React stale closure 等工程坑。<br><br>
+          这个项目已经部署在云服务器上，用 Nginx 做反向代理和 SSL，PM2 做进程管理。"
+        </div>
+      </div>
+      <div class="speech-box mt-16">
+        <div class="speaker">📝 1分钟简历式介绍（面试开场快速说）</div>
+        <div class="text">
+          "我做过一个叫 copilot-mini 的个人项目，是基于智谱 GLM-4.7 的 AI 对话助手，用 Fastify 做后端 API，MongoDB 做数据持久化，前端是 React，技术栈比较主流。这个项目我独立完成了前后端的设计和实现，重点解决了 JWT 鉴权、AI 服务集成、以及几个工程层面的 bug，比如 React 闭包陷阱和 Fastify 响应状态码被覆盖的问题。"
+        </div>
+      </div>
+      <div class="interview-tip">
+        记住：面试讲项目不是背功能，是<strong>讲思路、讲决策、讲踩坑</strong>。技术细节是为了证明你真的做过，不是为了炫耀。
+      </div>
+    </div>
+    <div class="slide-number">18 / 18</div>
+  </div>
+</div>
+
+<!-- 导航栏 -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prevBtn" onclick="prevSlide()">← 上一页</button>
+  <span class="page-indicator" id="pageIndicator">1 / 18</span>
+  <button class="nav-btn" id="nextBtn" onclick="nextSlide()">下一页 →</button>
+</div>
+
+<script>
+  let currentSlide = 1;
+  const totalSlides = 18;
+
+  function showSlide(n) {
+    if (n < 1) n = 1;
+    if (n > totalSlides) n = totalSlides;
+    currentSlide = n;
+
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    const slide = document.getElementById('slide-' + n);
+    if (slide) slide.classList.add('active');
+
+    document.getElementById('pageIndicator').textContent = n + ' / ' + totalSlides;
+    document.getElementById('prevBtn').disabled = (n === 1);
+    document.getElementById('nextBtn').disabled = (n === totalSlides);
+  }
+
+  function nextSlide() { showSlide(currentSlide + 1); }
+  function prevSlide() { showSlide(currentSlide - 1); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      nextSlide();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      prevSlide();
+    }
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) { dx > 0 ? nextSlide() : prevSlide(); }
+  });
+
+  showSlide(1);
+</script>
+</body>
+</html>

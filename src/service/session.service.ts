@@ -157,16 +157,4 @@ export const sessionService = {
     return { ok: true, data: message };
   },
 
-  async clearMessages(userId: string, sessionId: string) {
-    const result = await Session.updateOne(
-      { _id: new Types.ObjectId(sessionId), userId: new Types.ObjectId(userId) },
-      { $set: { messages: [], updatedAt: new Date() } }
-    );
-
-    if (result.matchedCount === 0) {
-      return { ok: false, error: "会话不存在或无权访问" } as const;
-    }
-
-    return { ok: true };
-  },
 };

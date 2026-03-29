@@ -79,15 +79,6 @@ async function addMessage(request: FastifyRequest, reply: FastifyReply) {
   return created(reply, result.data);
 }
 
-async function clearMessages(request: FastifyRequest, reply: FastifyReply) {
-  const userId = request.user!.userId;
-  const { id } = request.params as SessionParams;
-  const result = await sessionService.clearMessages(userId, id);
-  if (!result.ok) {
-    return fail(reply, ErrorCode.NOT_FOUND, result.error!, 404);
-  }
-  return success(reply, undefined, "消息已清空");
-}
 
 export default async function sessionRoutes(server: FastifyInstance) {
   server.addHook('preHandler', authMiddleware);
@@ -151,6 +142,4 @@ export default async function sessionRoutes(server: FastifyInstance) {
     },
   }, addMessage);
 
-  // 清空指定会话
-  server.delete('/:id/messages', clearMessages);
 }
