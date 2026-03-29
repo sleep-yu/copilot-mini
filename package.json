@@ -32,6 +32,7 @@
     "marked": "^17.0.4",
     "mongoose": "^9.3.0",
     "nodemon": "^3.1.14",
+    "tsconfig-paths": "^4.2.0",
     "undici": "^7.24.4",
     "uuid": "^11.1.0"
   },

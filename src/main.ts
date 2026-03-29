@@ -1,11 +1,13 @@
 import { config } from 'dotenv';
 import 'dotenv/config';
+import * as tsconfigPaths from 'tsconfig-paths';
 import fastify from "fastify";
 import cors from "@fastify/cors";
 import mongoose from 'mongoose';
 import { bindRoutes } from "./routes";
 import { bindHooks } from "./common/hooks";
 import { getEnvConfig } from "./common/utils/env";
+tsconfigPaths.register();
 config(); // dotenv 自动在 cwd 目录找 .env
 
 const MONGODB_URL = getEnvConfig("MONGODB_URL") as string;
