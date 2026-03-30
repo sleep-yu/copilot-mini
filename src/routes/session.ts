@@ -109,7 +109,9 @@ export default async function sessionRoutes(server: FastifyInstance) {
 
       try {
         for await (const chunk of aiService.askStream({ userId, message: content })) {
-          fullContent += chunk;
+          if (chunk.content) {
+            fullContent += chunk.content;
+          }
           const data = `data: ${JSON.stringify({ id: messageId, role: "assistant", content: fullContent })}\n\n`;
           reply.raw.write(data);
         }
