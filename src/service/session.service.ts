@@ -1,6 +1,6 @@
 import { Session } from "../model/Session";
 import { Types } from "mongoose";
-
+import { v4 as uuidv4 } from "uuid";
 
 const MESSAGE_ID_PREFIX = "msg-";
 

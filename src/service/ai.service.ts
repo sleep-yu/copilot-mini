@@ -13,12 +13,17 @@ export interface AskResult {
   error?: string;
 }
 
+/** 流式返回的单个 chunk，thinking 和 content 分开 */
+export interface StreamChunk {
+  thinking?: string;
+  content?: string;
+}
+
 export const aiService = {
   /**
    * 调用智谱大模型生成回复
    */
   async ask({ userId, message }: AskOptions): Promise<AskResult> {
-    // 运行时读取，确保 dotenv 已加载
     const AI_BASE_URL = process.env.AI_BASE_URL || config.get('AI_BASE_URL') as string;
     const AI_API_KEY = process.env.AI_API_KEY || config.get('AI_API_KEY') as string;
 
@@ -59,9 +64,9 @@ export const aiService = {
   },
 
   /**
-   * 流式调用智谱大模型，逐 chunk yield 增量内容
+   * 流式调用智谱大模型，yield { thinking, content } 两个字段分开
    */
-  async *askStream({ message }: { userId: string; message: string }): AsyncGenerator<string> {
+  async *askStream({ message }: { userId: string; message: string }): AsyncGenerator<StreamChunk> {
     const AI_BASE_URL = process.env.AI_BASE_URL || config.get('AI_BASE_URL') as string;
     const AI_API_KEY = process.env.AI_API_KEY || config.get('AI_API_KEY') as string;
 
@@ -75,6 +80,7 @@ export const aiService = {
         model: AI_MODEL,
         stream: true,
         messages: [{ role: 'user', content: message }],
+        enable_thinking: true,  // 开启深度思考
       }),
     });
 
@@ -82,33 +88,62 @@ export const aiService = {
       throw new Error(`AI 服务 HTTP 错误: ${response.status}`);
     }
 
-    const reader = response.body!.getReader();
+    const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
 
+    let thinkingPending = '';
+    let contentPending = '';
+
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {
+        if (thinkingPending) yield { thinking: thinkingPending };
+        if (contentPending) yield { content: contentPending };
+        break;
+      }
 
       buffer += decoder.decode(value, { stream: true });
 
-      // 按 SSE 行分割
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+      while (buffer.includes('\n')) {
+        const lineEnd = buffer.indexOf('\n');
+        const line = buffer.slice(0, lineEnd).trim();
+        buffer = buffer.slice(lineEnd + 1);
 
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6);
-        if (data === '[DONE]') return;
+        if (!line || !line.startsWith('data: ') || line === 'data: [DONE]') continue;
+
+        let parsed;
         try {
-          const parsed = JSON.parse(data);
-          const content = parsed.choices?.[0]?.delta?.content;
-          if (content) yield content;
+          parsed = JSON.parse(line.slice(6));
         } catch {
-          // 解析失败跳过
+          continue;
+        }
+
+        const delta = parsed.choices?.[0]?.delta;
+        const thinking = delta?.thinking;
+        const content = delta?.content;
+
+        if (thinking !== undefined && thinking !== null) {
+          const clean = thinking.replace(/^\n+/, '');
+          thinkingPending += clean;
+          if (thinkingPending.length >= 15 || /[。！？.!?]/.test(clean)) {
+            yield { thinking: thinkingPending };
+            thinkingPending = '';
+          }
+        }
+
+        if (content !== undefined && content !== null) {
+          contentPending += content;
+          if (contentPending.length >= 8 || /[。！？.!?]/.test(content)) {
+            yield { content: contentPending };
+            contentPending = '';
+          }
         }
       }
     }
+
+    if (thinkingPending) yield { thinking: thinkingPending };
+    if (contentPending) yield { content: contentPending };
   },
 
   /**
