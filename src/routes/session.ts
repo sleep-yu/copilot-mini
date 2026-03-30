@@ -106,14 +106,18 @@ export default async function sessionRoutes(server: FastifyInstance) {
       });
 
       let fullContent = "";
+      let fullThinking = "";
       const messageId = `msg-${Date.now()}`;
 
       try {
         for await (const chunk of aiService.askStream({ userId, message: content, enableThinking })) {
+          if (chunk.thinking) {
+            fullThinking += chunk.thinking;
+          }
           if (chunk.content) {
             fullContent += chunk.content;
           }
-          const data = `data: ${JSON.stringify({ id: messageId, role: "assistant", content: fullContent })}\n\n`;
+          const data = `data: ${JSON.stringify({ id: messageId, role: "assistant", thinking: fullThinking || undefined, content: fullContent })}\n\n`;
           reply.raw.write(data);
         }
         await sessionService.saveAssistantMessage(userId, sessionId, messageId, fullContent);
