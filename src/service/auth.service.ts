@@ -40,6 +40,7 @@ export const authService = {
         userId: user._id.toString(),
         email: user.email,
         nickname: user.nickname,
+        enableThinking: user.enableThinking ?? true,
         token,  // 返回 token，前端可直接使用
       },
     } as const;
@@ -68,13 +69,14 @@ export const authService = {
           userId: user._id.toString(),
           email: user.email,
           nickname: user.nickname,
+          enableThinking: user.enableThinking ?? true,
         },
       },
     } as const;
   },
 
   async getCurrentUser(userId: string) {
-    const user = await User.findById(userId).select("email nickname avatar");
+    const user = await User.findById(userId).select("email nickname avatar enableThinking");
     if (!user) {
       return { ok: false, error: "用户不存在" } as const;
     }
@@ -85,7 +87,25 @@ export const authService = {
         userId: user._id.toString(),
         email: user.email,
         nickname: user.nickname,
+        enableThinking: user.enableThinking ?? true,
       },
+    } as const;
+  },
+
+  async updateSettings(userId: string, settings: { enableThinking: boolean }) {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { enableThinking: settings.enableThinking },
+      { new: true }
+    ).select("enableThinking");
+
+    if (!user) {
+      return { ok: false, error: "用户不存在" } as const;
+    }
+
+    return {
+      ok: true,
+      data: { enableThinking: user.enableThinking ?? true },
     } as const;
   },
 };

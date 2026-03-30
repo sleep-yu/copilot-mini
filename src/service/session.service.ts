@@ -137,7 +137,7 @@ export const sessionService = {
    * 边收边存助手消息（每个 AI chunk 都调用）
    * 首次调用时创建 message，后续调用更新 content
    */
-  async saveAssistantMessage(userId: string, sessionId: string, messageId: string, content: string) {
+  async saveAssistantMessage(userId: string, sessionId: string, messageId: string, content: string, thinking?: string) {
     const session = await Session.findOne({
       _id: new Types.ObjectId(sessionId),
       userId: new Types.ObjectId(userId),
@@ -146,9 +146,12 @@ export const sessionService = {
 
     const existingIdx = session.messages.findIndex((m) => m.id === messageId);
     if (existingIdx === -1) {
-      session.messages.push({ id: messageId, role: "assistant" as const, content, timestamp: Date.now() });
+      session.messages.push({ id: messageId, role: "assistant" as const, content, thinking, timestamp: Date.now() });
     } else {
       session.messages[existingIdx].content = content;
+      if (thinking !== undefined) {
+        session.messages[existingIdx].thinking = thinking;
+      }
       session.messages[existingIdx].timestamp = Date.now();
     }
     session.updatedAt = new Date();

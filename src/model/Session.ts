@@ -4,6 +4,7 @@ export interface IMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  thinking?: string;
   timestamp: number;
 }
 
@@ -22,6 +23,7 @@ const MessageSchema = new Schema<IMessage>(
     id: { type: String, required: true },
     role: { type: String, enum: ["user", "assistant"], required: true },
     content: { type: String, required: true },
+    thinking: { type: String, required: false },
     timestamp: { type: Number, required: true },
   },
   { _id: false }

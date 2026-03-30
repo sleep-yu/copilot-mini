@@ -6,6 +6,7 @@ export interface IUser extends Document {
   password: string;
   nickname?: string;
   avatar?: string;
+  enableThinking?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,6 +33,10 @@ const UserSchema = new Schema<IUser>(
     avatar: {
       type: String,
       default: "",
+    },
+    enableThinking: {
+      type: Boolean,
+      default: true,
     },
   },
   {

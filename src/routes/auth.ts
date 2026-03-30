@@ -63,9 +63,21 @@ async function logout(_request: FastifyRequest, reply: FastifyReply) {
   return success(reply, undefined, "登出成功");
 }
 
+async function updateSettings(request: FastifyRequest, reply: FastifyReply) {
+  const userId = request.user!.userId;
+  const { enableThinking } = request.body as { enableThinking: boolean };
+
+  const result = await authService.updateSettings(userId, { enableThinking });
+  if (!result.ok) {
+    return fail(reply, ErrorCode.NOT_FOUND, result.error, 404);
+  }
+  return success(reply, result.data);
+}
+
 export default async function authRoutes(server: FastifyInstance) {
   server.post('/register', { schema: registerSchema }, register);
   server.post('/login', { schema: loginSchema }, login);
   server.get('/me', { preHandler: authMiddleware }, getCurrentUser);
   server.post('/logout', { preHandler: authMiddleware }, logout);
+  server.put('/settings', { preHandler: authMiddleware }, updateSettings);
 }

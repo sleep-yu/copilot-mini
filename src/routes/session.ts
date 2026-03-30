@@ -120,7 +120,7 @@ export default async function sessionRoutes(server: FastifyInstance) {
           const data = `data: ${JSON.stringify({ id: messageId, role: "assistant", thinking: fullThinking || undefined, content: fullContent })}\n\n`;
           reply.raw.write(data);
         }
-        await sessionService.saveAssistantMessage(userId, sessionId, messageId, fullContent);
+        await sessionService.saveAssistantMessage(userId, sessionId, messageId, fullContent, fullThinking);
       } catch (err) {
         console.error("AI 流式请求失败:", err);
         reply.raw.write(`data: ${JSON.stringify({ error: true, content: "抱歉，服务暂时不可用。" })}\n\n`);
