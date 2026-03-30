@@ -5,6 +5,7 @@ const AI_MODEL = config.get('AI_MODEL') as string || 'glm-4.7';
 export interface AskOptions {
   userId: string;
   message: string;
+  enableThinking?: boolean;
 }
 
 export interface AskResult {
@@ -66,9 +67,11 @@ export const aiService = {
   /**
    * 流式调用智谱大模型，yield { thinking, content } 两个字段分开
    */
-  async *askStream({ message }: { userId: string; message: string }): AsyncGenerator<StreamChunk> {
+  async *askStream({ userId, message, enableThinking }: { userId: string; message: string; enableThinking?: boolean }): AsyncGenerator<StreamChunk> {
     const AI_BASE_URL = process.env.AI_BASE_URL || config.get('AI_BASE_URL') as string;
     const AI_API_KEY = process.env.AI_API_KEY || config.get('AI_API_KEY') as string;
+
+    const shouldEnableThinking = enableThinking ?? (config.get('AI_ENABLE_THINKING') as boolean ?? true);
 
     const response = await fetch(`${AI_BASE_URL}/paas/v4/chat/completions`, {
       method: 'POST',
@@ -80,7 +83,7 @@ export const aiService = {
         model: AI_MODEL,
         stream: true,
         messages: [{ role: 'user', content: message }],
-        enable_thinking: true,  // 开启深度思考
+        enable_thinking: shouldEnableThinking,
       }),
     });
 

@@ -75,7 +75,7 @@ export default async function sessionRoutes(server: FastifyInstance) {
   });
 
   // 流式发送消息：POST /sessions/:id/messages
-  server.post<{ Params: SessionParams; Body: { content: string } }>(
+  server.post<{ Params: SessionParams; Body: { content: string; enableThinking?: boolean } }>(
     "/:id/messages",
     {
       schema: {
@@ -84,6 +84,7 @@ export default async function sessionRoutes(server: FastifyInstance) {
           required: ["content"],
           properties: {
             content: { type: "string" },
+            enableThinking: { type: "boolean" },
           },
         },
       },
@@ -92,7 +93,7 @@ export default async function sessionRoutes(server: FastifyInstance) {
     async (request, reply: FastifyReply) => {
       const userId = request.user!.userId;
       const { id: sessionId } = request.params;
-      const { content } = request.body;
+      const { content, enableThinking } = request.body;
 
       await sessionService.addUserMessage(userId, sessionId, content);
 
@@ -108,7 +109,7 @@ export default async function sessionRoutes(server: FastifyInstance) {
       const messageId = `msg-${Date.now()}`;
 
       try {
-        for await (const chunk of aiService.askStream({ userId, message: content })) {
+        for await (const chunk of aiService.askStream({ userId, message: content, enableThinking })) {
           if (chunk.content) {
             fullContent += chunk.content;
           }
